@@ -58,11 +58,14 @@ class ChangeRecord:
 
     def compute_checksum(self) -> str:
         """Compute checksum for change verification."""
-        data_str = json.dumps({
-            "memory_id": self.memory_id,
-            "operation": self.operation,
-            "data": self.data,
-        }, sort_keys=True)
+        data_str = json.dumps(
+            {
+                "memory_id": self.memory_id,
+                "operation": self.operation,
+                "data": self.data,
+            },
+            sort_keys=True,
+        )
         return hashlib.sha256(data_str.encode()).hexdigest()[:16]
 
 
@@ -241,15 +244,15 @@ class SyncClient:
 
                     # Check for conflict
                     if result.get("conflict"):
-                        self.conflicts.append(SyncConflict(
-                            memory_id=change.memory_id,
-                            local_version=change.data,
-                            server_version=result["conflict"]["server_version"],
-                            local_timestamp=change.timestamp,
-                            server_timestamp=datetime.fromisoformat(
-                                result["conflict"]["server_timestamp"]
-                            ),
-                        ))
+                        self.conflicts.append(
+                            SyncConflict(
+                                memory_id=change.memory_id,
+                                local_version=change.data,
+                                server_version=result["conflict"]["server_version"],
+                                local_timestamp=change.timestamp,
+                                server_timestamp=datetime.fromisoformat(result["conflict"]["server_timestamp"]),
+                            )
+                        )
                         return False
 
                     return True

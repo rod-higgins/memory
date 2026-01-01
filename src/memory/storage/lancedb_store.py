@@ -259,9 +259,7 @@ class LanceDBStore(BaseStore):
             return None  # Not initialized yet
 
         try:
-            results = (
-                self._table.search().where(f"content_hash = '{content_hash}'").limit(1).to_list()
-            )
+            results = self._table.search().where(f"content_hash = '{content_hash}'").limit(1).to_list()
 
             if results:
                 return self._from_lance_dict(results[0])

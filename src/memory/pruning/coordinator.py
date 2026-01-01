@@ -77,7 +77,7 @@ class PruningCoordinator:
         if filters:
             if "domain" in filters:
                 query += " AND domains_json LIKE ?"
-                params.append(f'%{filters["domain"]}%')
+                params.append(f"%{filters['domain']}%")
 
         query += " ORDER BY created_at DESC"
 
@@ -139,9 +139,7 @@ class PruningCoordinator:
                 # Track by filter
                 for fr in result.filter_results:
                     if fr.should_prune:
-                        stats.by_filter[fr.filter_name] = (
-                            stats.by_filter.get(fr.filter_name, 0) + 1
-                        )
+                        stats.by_filter[fr.filter_name] = stats.by_filter.get(fr.filter_name, 0) + 1
             else:
                 stats.total_kept += 1
 
@@ -156,7 +154,7 @@ class PruningCoordinator:
         if self._conn:
             self._conn.execute(
                 "UPDATE memories SET is_active = 0, updated_at = ? WHERE id = ?",
-                (datetime.now().isoformat(), memory_id)
+                (datetime.now().isoformat(), memory_id),
             )
 
     async def _archive(self, memory_id: str) -> None:
@@ -168,7 +166,7 @@ class PruningCoordinator:
                        metadata_json = json_set(COALESCE(metadata_json, '{}'), '$.archived', true),
                        updated_at = ?
                    WHERE id = ?""",
-                (datetime.now().isoformat(), memory_id)
+                (datetime.now().isoformat(), memory_id),
             )
 
     async def get_prune_preview(
@@ -190,24 +188,27 @@ class PruningCoordinator:
                     continue
 
                 cursor = self._conn.execute(
-                    "SELECT id, summary, content, domains_json, tags_json FROM memories WHERE id = ?",
-                    (r.memory_id,)
+                    "SELECT id, summary, content, domains_json, tags_json FROM memories WHERE id = ?", (r.memory_id,)
                 )
                 row = cursor.fetchone()
                 if row:
-                    preview.append({
-                        "id": row["id"],
-                        "summary": row["summary"],
-                        "content_preview": row["content"][:200] + "..." if len(row["content"]) > 200 else row["content"],
-                        "domains": json.loads(row["domains_json"] or "[]"),
-                        "tags": json.loads(row["tags_json"] or "[]"),
-                        "quality_score": r.quality_score,
-                        "relevance_score": r.relevance_score,
-                        "prune_reasons": r.prune_reasons,
-                        "positive_signals": r.positive_signals,
-                        "suggested_action": r.suggested_action,
-                        "confidence": r.confidence,
-                    })
+                    preview.append(
+                        {
+                            "id": row["id"],
+                            "summary": row["summary"],
+                            "content_preview": row["content"][:200] + "..."
+                            if len(row["content"]) > 200
+                            else row["content"],
+                            "domains": json.loads(row["domains_json"] or "[]"),
+                            "tags": json.loads(row["tags_json"] or "[]"),
+                            "quality_score": r.quality_score,
+                            "relevance_score": r.relevance_score,
+                            "prune_reasons": r.prune_reasons,
+                            "positive_signals": r.positive_signals,
+                            "suggested_action": r.suggested_action,
+                            "confidence": r.confidence,
+                        }
+                    )
 
         return preview
 

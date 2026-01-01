@@ -207,13 +207,16 @@ class KnowledgeExtractor:
         conn.row_factory = sqlite3.Row
 
         # Get sent emails (user-authored - most valuable)
-        cursor = conn.execute("""
+        cursor = conn.execute(
+            """
             SELECT id, content, summary, tags_json
             FROM memories
             WHERE tags_json LIKE '%sent%'
             AND domains_json LIKE '%email%'
             LIMIT ?
-        """, (limit,))
+        """,
+            (limit,),
+        )
 
         rows = cursor.fetchall()
         print(f"  Processing {len(rows)} sent emails...")
@@ -307,7 +310,9 @@ class KnowledgeExtractor:
         if not profile_summary:
             expertise = profile.get("expertise", [])[:5]
             roles = profile.get("roles", [])[:3]
-            profile_summary = f"Professional with expertise in {', '.join(expertise)}. Experience as {', '.join(roles)}."
+            profile_summary = (
+                f"Professional with expertise in {', '.join(expertise)}. Experience as {', '.join(roles)}."
+            )
 
         entry = KnowledgeEntry(
             knowledge_type=KnowledgeType.FACT,

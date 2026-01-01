@@ -213,9 +213,7 @@ class SQLiteStore(BaseStore):
         if not self._conn:
             raise RuntimeError("Store not initialized")
 
-        cursor = self._conn.execute(
-            "SELECT * FROM memories WHERE id = ?", (str(memory_id),)
-        )
+        cursor = self._conn.execute("SELECT * FROM memories WHERE id = ?", (str(memory_id),))
         row = cursor.fetchone()
 
         if row:
@@ -290,9 +288,7 @@ class SQLiteStore(BaseStore):
         if not self._conn:
             raise RuntimeError("Store not initialized")
 
-        cursor = self._conn.execute(
-            "DELETE FROM memories WHERE id = ?", (str(memory_id),)
-        )
+        cursor = self._conn.execute("DELETE FROM memories WHERE id = ?", (str(memory_id),))
         self._conn.commit()
         return cursor.rowcount > 0
 
@@ -387,9 +383,7 @@ class SQLiteStore(BaseStore):
             return None  # Not initialized yet
 
         try:
-            cursor = self._conn.execute(
-                "SELECT * FROM memories WHERE content_hash = ?", (content_hash,)
-            )
+            cursor = self._conn.execute("SELECT * FROM memories WHERE content_hash = ?", (content_hash,))
             row = cursor.fetchone()
 
             if row:

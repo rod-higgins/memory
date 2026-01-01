@@ -51,12 +51,29 @@ class ContentAnalyzer:
 
     # User's known domains of interest (could be loaded from identity)
     USER_DOMAINS = [
-        "software", "programming", "development", "code",
-        "drupal", "php", "python", "javascript", "typescript",
-        "aws", "cloud", "infrastructure", "devops",
-        "ai", "machine learning", "llm", "artificial intelligence",
-        "business", "consulting", "project management",
-        "senua", "senuamedia", "higgins",
+        "software",
+        "programming",
+        "development",
+        "code",
+        "drupal",
+        "php",
+        "python",
+        "javascript",
+        "typescript",
+        "aws",
+        "cloud",
+        "infrastructure",
+        "devops",
+        "ai",
+        "machine learning",
+        "llm",
+        "artificial intelligence",
+        "business",
+        "consulting",
+        "project management",
+        "senua",
+        "senuamedia",
+        "higgins",
     ]
 
     def __init__(
@@ -110,9 +127,7 @@ class ContentAnalyzer:
         relevance_score = self._calculate_relevance_score(content, domains, tags)
 
         # Determine if should prune
-        prune_score = sum(
-            r.confidence for r in filter_results if r.should_prune
-        ) / max(len(self.filters), 1)
+        prune_score = sum(r.confidence for r in filter_results if r.should_prune) / max(len(self.filters), 1)
 
         # Positive signals reduce prune likelihood
         positive_boost = len(positive_signals) * 0.15
@@ -168,15 +183,15 @@ class ContentAnalyzer:
             signals.append("business_context")
 
         # Contains code
-        if re.search(r'```|def |function |class |import |from |const |let |var ', content):
+        if re.search(r"```|def |function |class |import |from |const |let |var ", content):
             signals.append("contains_code")
 
         # Contains project references
-        if re.search(r'(?i)(project|ticket|jira|github|pull request|pr|issue)', content):
+        if re.search(r"(?i)(project|ticket|jira|github|pull request|pr|issue)", content):
             signals.append("project_reference")
 
         # Technical discussion
-        if re.search(r'(?i)(api|database|server|deploy|bug|feature|implement)', content):
+        if re.search(r"(?i)(api|database|server|deploy|bug|feature|implement)", content):
             signals.append("technical_content")
 
         return signals

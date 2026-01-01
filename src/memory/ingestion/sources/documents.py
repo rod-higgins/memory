@@ -70,6 +70,7 @@ class ObsidianVaultSource(DataSource):
                 if len(parts) >= 3:
                     try:
                         import yaml
+
                         frontmatter = yaml.safe_load(parts[1]) or {}
                         content = parts[2].strip()
                     except Exception:
@@ -77,6 +78,7 @@ class ObsidianVaultSource(DataSource):
 
             # Extract tags from content
             import re
+
             tags = re.findall(r"#(\w+)", content)
             tags = list(set(tags))
 
@@ -85,10 +87,7 @@ class ObsidianVaultSource(DataSource):
 
             # Determine note type
             note_path = md_file.relative_to(self.vault_path)
-            is_daily = any(
-                x in str(note_path).lower()
-                for x in ["daily", "journal", "diary"]
-            )
+            is_daily = any(x in str(note_path).lower() for x in ["daily", "journal", "diary"])
 
             if is_daily and not self.include_daily_notes:
                 continue
@@ -147,6 +146,7 @@ class NotionExportSource(DataSource):
             filename = md_file.stem
             # Remove the Notion page ID suffix if present
             import re
+
             title_match = re.match(r"(.+?)\s+[a-f0-9]{32}$", filename)
             title = title_match.group(1) if title_match else filename
 
@@ -222,8 +222,7 @@ class AppleNotesSource(DataSource):
                 # Convert Apple's timestamp (seconds since 2001-01-01)
                 modified = None
                 if row["modified"]:
-                    modified = datetime(2001, 1, 1) + \
-                        __import__("datetime").timedelta(seconds=row["modified"])
+                    modified = datetime(2001, 1, 1) + __import__("datetime").timedelta(seconds=row["modified"])
 
                 # Get note content
                 content = row["snippet"] or ""
@@ -233,6 +232,7 @@ class AppleNotesSource(DataSource):
                     try:
                         # Apple Notes stores content in a compressed format
                         import gzip
+
                         decompressed = gzip.decompress(row["data"])
                         content = decompressed.decode("utf-8", errors="ignore")
                     except Exception:
@@ -256,9 +256,7 @@ class AppleNotesSource(DataSource):
             conn.close()
 
         except sqlite3.OperationalError as e:
-            raise PermissionError(
-                f"Cannot access Notes database. Grant Full Disk Access. Error: {e}"
-            )
+            raise PermissionError(f"Cannot access Notes database. Grant Full Disk Access. Error: {e}")
 
 
 class EvernoteExportSource(DataSource):
@@ -381,6 +379,7 @@ class BearExportSource(DataSource):
 
             # Bear uses # for tags in the content
             import re
+
             tags = re.findall(r"#([^\s#]+(?:/[^\s#]+)*)", content)
             tags = list(set(tags))
 
@@ -444,8 +443,7 @@ class LocalDocumentsSource(DataSource):
         if not self.path.exists():
             return 0
         pattern = "**/*" if self.recursive else "*"
-        count = sum(1 for f in self.path.glob(pattern)
-                   if f.is_file() and f.suffix.lower() in self.extensions)
+        count = sum(1 for f in self.path.glob(pattern) if f.is_file() and f.suffix.lower() in self.extensions)
         return count
 
     async def iterate(self) -> AsyncIterator[DataPoint]:
@@ -498,6 +496,7 @@ class LocalDocumentsSource(DataSource):
         elif suffix == ".pdf":
             try:
                 from pypdf import PdfReader
+
                 reader = PdfReader(str(file_path))
                 text = []
                 for page in reader.pages:
@@ -509,6 +508,7 @@ class LocalDocumentsSource(DataSource):
         elif suffix in [".docx", ".doc"]:
             try:
                 from docx import Document
+
                 doc = Document(str(file_path))
                 return "\n".join(p.text for p in doc.paragraphs)
             except Exception:
@@ -519,6 +519,7 @@ class LocalDocumentsSource(DataSource):
                 # Basic RTF parsing
                 content = file_path.read_text(encoding="utf-8", errors="ignore")
                 import re
+
                 # Remove RTF control words
                 content = re.sub(r"\\[a-z]+\d*\s?", "", content)
                 content = re.sub(r"[{}]", "", content)
@@ -594,6 +595,7 @@ class GoogleDocsExportSource(DataSource):
         elif suffix == ".docx":
             try:
                 from docx import Document
+
                 doc = Document(str(file_path))
                 return "\n".join(p.text for p in doc.paragraphs)
             except Exception:
@@ -602,6 +604,7 @@ class GoogleDocsExportSource(DataSource):
         elif suffix == ".html":
             try:
                 import re
+
                 content = file_path.read_text(encoding="utf-8", errors="ignore")
                 # Strip HTML tags
                 content = re.sub(r"<[^>]+>", " ", content)
@@ -612,6 +615,7 @@ class GoogleDocsExportSource(DataSource):
         elif suffix == ".pdf":
             try:
                 from pypdf import PdfReader
+
                 reader = PdfReader(str(file_path))
                 text = []
                 for page in reader.pages:

@@ -28,6 +28,7 @@ try:
     import torch
     import torch.nn as nn
     import torch.nn.functional as F
+
     HAS_TORCH = True
 except ImportError:
     HAS_TORCH = False
@@ -159,9 +160,7 @@ if HAS_TORCH:
             self.attn_dropout = nn.Dropout(config.attention_dropout)
 
             # Memory scale (learnable)
-            self.memory_scale = nn.Parameter(
-                torch.tensor(config.memory_scale)
-            )
+            self.memory_scale = nn.Parameter(torch.tensor(config.memory_scale))
 
         def forward(
             self,
@@ -227,10 +226,7 @@ if HAS_TORCH:
                 V_mem = V_mem.view(batch_size, mem_len, self.num_heads, self.d_value).transpose(1, 2)
 
                 # Memory attention with scaling
-                attn_mem = self._compute_attention(
-                    Q, K_mem, V_mem, memory_mask,
-                    scale_factor=self.memory_scale.item()
-                )
+                attn_mem = self._compute_attention(Q, K_mem, V_mem, memory_mask, scale_factor=self.memory_scale.item())
 
             # Fuse context and memory attention
             output = self._fuse_attention(attn_ctx, attn_mem)
@@ -273,7 +269,7 @@ if HAS_TORCH:
 
             # Apply mask
             if mask is not None:
-                scores = scores.masked_fill(mask == 0, float('-inf'))
+                scores = scores.masked_fill(mask == 0, float("-inf"))
 
             # Softmax and dropout
             attn_weights = F.softmax(scores, dim=-1)
@@ -318,7 +314,6 @@ if HAS_TORCH:
                 # Default: additive
                 return ctx_attn + mem_attn
 
-
     class ChunkedMemoryAttention(MemoryAttention):
         """
         Memory attention with chunking for efficiency with large memory stores.
@@ -342,8 +337,7 @@ if HAS_TORCH:
             if memory_keys is None or memory_keys.shape[1] <= self.config.chunk_size:
                 # Small memory, use standard attention
                 return super().forward(
-                    query, context, memory_keys, memory_values,
-                    attention_mask, memory_mask, return_attention
+                    query, context, memory_keys, memory_values, attention_mask, memory_mask, return_attention
                 )
 
             # Chunked processing for large memory
@@ -381,7 +375,7 @@ if HAS_TORCH:
 
             # Combine all chunks with numerically stable softmax
             all_scores = torch.cat(all_scores, dim=-1)  # [batch, heads, seq, total_mem]
-            all_values = torch.cat(all_values, dim=2)   # [batch, heads, total_mem, d_value]
+            all_values = torch.cat(all_values, dim=2)  # [batch, heads, total_mem, d_value]
 
             attn_weights = F.softmax(all_scores / self.config.temperature, dim=-1)
             attn_weights = self.attn_dropout(attn_weights)
@@ -463,4 +457,5 @@ else:
 
     class ChunkedMemoryAttention(MemoryAttention):
         """Chunked attention for NumPy backend."""
+
         pass

@@ -161,13 +161,10 @@ class MemoryKeyValueCache:
                     self.config.num_heads * (self.config.d_key + self.config.d_value) * 4
                 )
                 with open(cold_file, "wb") as f:
-                    f.write(b'\0' * min(initial_size, 1024 * 1024 * 100))  # Max 100MB initial
+                    f.write(b"\0" * min(initial_size, 1024 * 1024 * 100))  # Max 100MB initial
 
             self._cold_file = open(cold_file, "r+b")
-            self._cold_mmap = mmap.mmap(
-                self._cold_file.fileno(), 0,
-                access=mmap.ACCESS_WRITE
-            )
+            self._cold_mmap = mmap.mmap(self._cold_file.fileno(), 0, access=mmap.ACCESS_WRITE)
 
     def add(
         self,
@@ -242,7 +239,7 @@ class MemoryKeyValueCache:
                     memory_id=memory_id,
                     key=keys[i],
                     value=values[i],
-                    embedding=embeddings[i] if hasattr(embeddings, '__getitem__') else None,
+                    embedding=embeddings[i] if hasattr(embeddings, "__getitem__") else None,
                     tier=CacheTier.HOT,
                 )
                 entries.append(entry)
@@ -253,7 +250,7 @@ class MemoryKeyValueCache:
 
         else:
             for i, memory_id in enumerate(memory_ids):
-                emb = embeddings[i] if hasattr(embeddings, '__getitem__') else embeddings
+                emb = embeddings[i] if hasattr(embeddings, "__getitem__") else embeddings
                 entries.append(self.add(memory_id, emb, project))
 
         self._evict_if_needed()
@@ -300,6 +297,7 @@ class MemoryKeyValueCache:
 
             if HAS_TORCH:
                 import torch
+
                 if isinstance(all_keys[0], torch.Tensor):
                     return torch.stack(all_keys), torch.stack(all_values)
 
@@ -342,6 +340,7 @@ class MemoryKeyValueCache:
             # Compute similarities
             if HAS_TORCH:
                 import torch
+
                 if not isinstance(query_embedding, torch.Tensor):
                     query_embedding = torch.tensor(query_embedding, dtype=torch.float32)
                 if not isinstance(embeddings[0], torch.Tensor):
@@ -401,7 +400,7 @@ class MemoryKeyValueCache:
 
         # NumPy fallback
         if HAS_NUMPY:
-            if hasattr(self.key_projection, 'weight'):
+            if hasattr(self.key_projection, "weight"):
                 key = embedding @ self.key_projection.weight.T.numpy()
                 value = embedding @ self.value_projection.weight.T.numpy()
             else:
@@ -446,10 +445,7 @@ class MemoryKeyValueCache:
                     break
         elif self.config.eviction_policy == "lfu":
             # Find least frequently used
-            victim_id = min(
-                self.hot.keys(),
-                key=lambda x: self.access_counts.get(x, 0)
-            )
+            victim_id = min(self.hot.keys(), key=lambda x: self.access_counts.get(x, 0))
         else:
             # FIFO
             victim_id = next(iter(self.hot))
@@ -600,8 +596,8 @@ class MemoryKeyValueCache:
             return -1  # Would need to grow file
 
         # Write length + data
-        self._cold_mmap[offset:offset + 4] = struct.pack('I', len(data))
-        self._cold_mmap[offset + 4:offset + 4 + len(data)] = data
+        self._cold_mmap[offset : offset + 4] = struct.pack("I", len(data))
+        self._cold_mmap[offset + 4 : offset + 4 + len(data)] = data
 
         return offset
 
@@ -612,9 +608,9 @@ class MemoryKeyValueCache:
 
         try:
             # Read length
-            length = struct.unpack('I', self._cold_mmap[offset:offset + 4])[0]
+            length = struct.unpack("I", self._cold_mmap[offset : offset + 4])[0]
             # Read data
-            data = bytes(self._cold_mmap[offset + 4:offset + 4 + length])
+            data = bytes(self._cold_mmap[offset + 4 : offset + 4 + length])
 
             return self._deserialize_entry(data, memory_id)
         except Exception:
@@ -630,6 +626,7 @@ class MemoryKeyValueCache:
         elif entry.key is not None:
             if HAS_TORCH:
                 import torch
+
                 if isinstance(entry.key, torch.Tensor):
                     parts.append(entry.key.numpy().tobytes())
                 else:
@@ -643,6 +640,7 @@ class MemoryKeyValueCache:
         elif entry.value is not None:
             if HAS_TORCH:
                 import torch
+
                 if isinstance(entry.value, torch.Tensor):
                     parts.append(entry.value.numpy().tobytes())
                 else:
@@ -650,7 +648,7 @@ class MemoryKeyValueCache:
             elif HAS_NUMPY:
                 parts.append(np.array(entry.value).tobytes())
 
-        return b''.join(parts)
+        return b"".join(parts)
 
     def _deserialize_entry(self, data: bytes, memory_id: str) -> CacheEntry:
         """Deserialize entry from cold storage."""
@@ -694,11 +692,7 @@ class MemoryKeyValueCache:
 
     def __contains__(self, memory_id: str) -> bool:
         """Check if memory is cached."""
-        return (
-            memory_id in self.hot or
-            memory_id in self.warm or
-            memory_id in self.cold_index
-        )
+        return memory_id in self.hot or memory_id in self.warm or memory_id in self.cold_index
 
     def close(self) -> None:
         """Close cache and release resources."""

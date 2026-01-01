@@ -55,9 +55,7 @@ class ClaudeCodeTracker:
             # Look for conversation files
             for conv_file in project_dir.glob("*.jsonl"):
                 try:
-                    interactions.extend(
-                        self._parse_conversation_file(conv_file, limit=limit // 5)
-                    )
+                    interactions.extend(self._parse_conversation_file(conv_file, limit=limit // 5))
                 except Exception:
                     continue
 
@@ -73,9 +71,7 @@ class ClaudeCodeTracker:
         interactions.sort(key=lambda x: x.timestamp, reverse=True)
         return interactions[:limit]
 
-    def _parse_conversation_file(
-        self, file_path: Path, limit: int = 10
-    ) -> list[LLMInteraction]:
+    def _parse_conversation_file(self, file_path: Path, limit: int = 10) -> list[LLMInteraction]:
         """Parse a JSONL conversation file."""
         interactions = []
 
@@ -91,18 +87,14 @@ class ClaudeCodeTracker:
 
                 if isinstance(content, list):
                     # Handle structured content
-                    content = " ".join(
-                        c.get("text", "") for c in content if isinstance(c, dict)
-                    )
+                    content = " ".join(c.get("text", "") for c in content if isinstance(c, dict))
 
                 if role == "user":
                     user_msg = content
                 elif role == "assistant" and user_msg:
                     interactions.append(
                         LLMInteraction(
-                            timestamp=datetime.fromisoformat(
-                                data.get("timestamp", datetime.now().isoformat())
-                            )
+                            timestamp=datetime.fromisoformat(data.get("timestamp", datetime.now().isoformat()))
                             if "timestamp" in data
                             else datetime.now(),
                             provider="claude_code",
@@ -188,12 +180,8 @@ class LLMInteractionStore:
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP
             )
         """)
-        conn.execute(
-            "CREATE INDEX IF NOT EXISTS idx_timestamp ON interactions(timestamp)"
-        )
-        conn.execute(
-            "CREATE INDEX IF NOT EXISTS idx_processed ON interactions(processed)"
-        )
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_timestamp ON interactions(timestamp)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_processed ON interactions(processed)")
         conn.commit()
         conn.close()
 
@@ -244,9 +232,7 @@ class LLMInteractionStore:
                 user_message=row["user_message"] or "",
                 assistant_response=row["assistant_response"] or "",
                 tokens_used=row["tokens_used"] or 0,
-                metadata=json.loads(row["metadata_json"])
-                if row["metadata_json"]
-                else None,
+                metadata=json.loads(row["metadata_json"]) if row["metadata_json"] else None,
             )
             results.append((row["id"], interaction))
 

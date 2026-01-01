@@ -83,9 +83,7 @@ class ClaudeHistoryParser:
                             source_type=SourceType.CLAUDE_HISTORY,
                             source_path=str(self._history_path),
                             source_id=session_id,
-                            timestamp=datetime.fromtimestamp(timestamp / 1000)
-                            if timestamp
-                            else datetime.now(),
+                            timestamp=datetime.fromtimestamp(timestamp / 1000) if timestamp else datetime.now(),
                             raw_content=content,
                             extraction_method="claude_history_parser",
                         )

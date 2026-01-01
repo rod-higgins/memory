@@ -105,6 +105,7 @@ class OllamaPersonalSLM(PersonalSLM):
     ) -> PersonalContext:
         """Generate personalized context for a query."""
         import time
+
         start = time.time()
 
         prompt = f"""Based on your understanding of the user, provide relevant context for this query.
@@ -234,10 +235,7 @@ Context:"""
 
                 # Check if personal model or fallback is available
                 model_names = [m.get("name", "") for m in models]
-                return (
-                    self._model_name in model_names or
-                    any(self._fallback_model in n for n in model_names)
-                )
+                return self._model_name in model_names or any(self._fallback_model in n for n in model_names)
 
         except httpx.HTTPError:
             return False
@@ -267,6 +265,7 @@ class HybridPersonalSLM(PersonalSLM):
         """Ensure the memory API is initialized."""
         if self._api is None:
             from memory.api.memory_api import MemoryAPI
+
             self._api = MemoryAPI(base_path=self._storage_path)
             await self._api.initialize()
 
@@ -277,6 +276,7 @@ class HybridPersonalSLM(PersonalSLM):
     ) -> PersonalContext:
         """Generate context using both SLM and RAG."""
         import time
+
         start = time.time()
 
         await self._ensure_api()

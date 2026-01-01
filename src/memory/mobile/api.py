@@ -77,9 +77,7 @@ class MobileSession:
     device_id: str = ""
     started_at: datetime = field(default_factory=datetime.now)
     last_activity: datetime = field(default_factory=datetime.now)
-    expires_at: datetime = field(
-        default_factory=lambda: datetime.now() + timedelta(days=30)
-    )
+    expires_at: datetime = field(default_factory=lambda: datetime.now() + timedelta(days=30))
 
     # Activity tracking
     queries_count: int = 0
@@ -220,10 +218,7 @@ class MobileAPI:
         changes = self.pending_changes.get(device_id, [])
 
         if since:
-            changes = [
-                c for c in changes
-                if datetime.fromisoformat(c["timestamp"]) > since
-            ]
+            changes = [c for c in changes if datetime.fromisoformat(c["timestamp"]) > since]
 
         # Limit results
         changes = changes[:limit]
@@ -378,7 +373,9 @@ class MobileAPI:
                 "active": session is not None,
                 "queries": session.queries_count if session else 0,
                 "memories_created": session.memories_created if session else 0,
-            } if session else None,
+            }
+            if session
+            else None,
         }
 
 

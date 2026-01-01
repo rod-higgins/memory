@@ -67,7 +67,7 @@ class XMLFormatter(BaseFormatter):
         config = config or ExportConfig()
         scores = scores or [1.0] * len(memories)
 
-        lines = ['<user_memory_context>']
+        lines = ["<user_memory_context>"]
 
         if config.group_by_type:
             # Group by memory type
@@ -79,16 +79,16 @@ class XMLFormatter(BaseFormatter):
                 by_type[type_name].append((mem, score))
 
             for type_name, items in by_type.items():
-                lines.append(f'  <{type_name}s>')
+                lines.append(f"  <{type_name}s>")
                 for mem, score in items:
                     lines.append(self._format_memory(mem, score, config))
-                lines.append(f'  </{type_name}s>')
+                lines.append(f"  </{type_name}s>")
         else:
             for mem, score in zip(memories, scores):
                 lines.append(self._format_memory(mem, score, config))
 
-        lines.append('</user_memory_context>')
-        return '\n'.join(lines)
+        lines.append("</user_memory_context>")
+        return "\n".join(lines)
 
     def _format_memory(
         self,
@@ -109,7 +109,7 @@ class XMLFormatter(BaseFormatter):
         attr_str = " ".join(attrs)
         content = mem.summary or mem.content[:200]
 
-        return f'    <memory {attr_str}>{content}</memory>'
+        return f"    <memory {attr_str}>{content}</memory>"
 
 
 class JSONFormatter(BaseFormatter):
@@ -188,7 +188,7 @@ class MarkdownFormatter(BaseFormatter):
                 content = mem.summary or mem.content[:200]
                 lines.append(f"- **{mem.memory_type.value}**: {content}")
 
-        return '\n'.join(lines)
+        return "\n".join(lines)
 
 
 class SystemPromptFormatter(BaseFormatter):
@@ -203,10 +203,7 @@ class SystemPromptFormatter(BaseFormatter):
         config = config or ExportConfig()
         scores = scores or [1.0] * len(memories)
 
-        lines = [
-            "You have access to the following context about the user. Use this to personalize your responses:",
-            ""
-        ]
+        lines = ["You have access to the following context about the user. Use this to personalize your responses:", ""]
 
         # Group by type for clarity
         by_type: dict[str, list[MemoryEntry]] = {}
@@ -251,7 +248,7 @@ class SystemPromptFormatter(BaseFormatter):
                 lines.append(f"  - {mem.summary or mem.content[:150]}")
             lines.append("")
 
-        return '\n'.join(lines)
+        return "\n".join(lines)
 
 
 class ClaudeFormatter(BaseFormatter):
@@ -273,7 +270,7 @@ class ClaudeFormatter(BaseFormatter):
             "<user_profile>",
             "The following represents known information about the user.",
             "Use this context to provide personalized, relevant responses.",
-            ""
+            "",
         ]
 
         # Group by memory type for better organization
@@ -312,7 +309,7 @@ class ClaudeFormatter(BaseFormatter):
 
         lines.append("</user_profile>")
 
-        return '\n'.join(lines)
+        return "\n".join(lines)
 
     def _get_display_content(self, mem: MemoryEntry) -> str:
         """Get the best display content for a memory."""
@@ -355,7 +352,7 @@ class CompactFormatter(BaseFormatter):
             content = (mem.summary or mem.content)[:80]
             lines.append(f"{type_abbrev}: {content}")
 
-        return '\n'.join(lines)
+        return "\n".join(lines)
 
 
 class MemoryExporter:

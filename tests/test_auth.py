@@ -1,25 +1,20 @@
 """Tests for authentication module."""
 
-import pytest
-from datetime import datetime, timedelta
-from pathlib import Path
 import tempfile
-import os
+from datetime import datetime
+from pathlib import Path
 
+import pytest
+
+from memory.auth.mfa import MFAManager
 from memory.auth.models import (
-    User,
-    UserCreate,
-    UserUpdate,
-    UserRole,
-    Session,
-    LoginRequest,
-    MFASetupResponse,
-    MFAVerifyRequest,
-    TokenResponse,
     AuthState,
+    LoginRequest,
+    UserCreate,
+    UserRole,
+    UserUpdate,
 )
 from memory.auth.password import PasswordManager, get_password_manager
-from memory.auth.mfa import MFAManager, get_mfa_manager
 from memory.auth.store import AuthStore
 
 
@@ -161,8 +156,9 @@ class TestMFAManager:
         assert len(qr_base64) > 100  # Should have substantial content
         # Verify it's valid base64
         import base64
+
         decoded = base64.b64decode(qr_base64)
-        assert decoded[:8] == b'\x89PNG\r\n\x1a\n'  # PNG magic bytes
+        assert decoded[:8] == b"\x89PNG\r\n\x1a\n"  # PNG magic bytes
 
     def test_encrypt_decrypt_secret(self, encryption_key):
         """Test secret encryption and decryption."""

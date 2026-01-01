@@ -143,9 +143,7 @@ class VideoProcessor:
         if self.extract_audio:
             audio_path = await self._extract_audio(path)
             if audio_path:
-                memory.audio_memory = await self._audio_processor.process_audio(
-                    audio_path
-                )
+                memory.audio_memory = await self._audio_processor.process_audio(audio_path)
                 # Clean up temp audio file
                 Path(audio_path).unlink(missing_ok=True)
 
@@ -196,10 +194,7 @@ class VideoProcessor:
                 import subprocess
 
                 result = subprocess.run(
-                    [
-                        "ffprobe", "-v", "quiet", "-print_format", "json",
-                        "-show_format", "-show_streams", str(path)
-                    ],
+                    ["ffprobe", "-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", str(path)],
                     capture_output=True,
                     text=True,
                 )
@@ -248,10 +243,18 @@ class VideoProcessor:
             # Use ffmpeg to extract audio
             result = subprocess.run(
                 [
-                    "ffmpeg", "-i", str(path),
-                    "-vn", "-acodec", "pcm_s16le",
-                    "-ar", "16000", "-ac", "1",
-                    "-y", audio_path
+                    "ffmpeg",
+                    "-i",
+                    str(path),
+                    "-vn",
+                    "-acodec",
+                    "pcm_s16le",
+                    "-ar",
+                    "16000",
+                    "-ac",
+                    "1",
+                    "-y",
+                    audio_path,
                 ],
                 capture_output=True,
             )
@@ -304,9 +307,7 @@ class VideoProcessor:
                         motion_score = diff.mean()
 
                     # Save frame to temp file for processing
-                    with tempfile.NamedTemporaryFile(
-                        suffix=".jpg", delete=False
-                    ) as tmp:
+                    with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmp:
                         cv2.imwrite(tmp.name, frame)
 
                         # Process frame
@@ -318,11 +319,13 @@ class VideoProcessor:
                                 generate_description=True,
                             )
 
-                            frames.append(VideoFrame(
-                                timestamp=timestamp,
-                                image_memory=image_memory,
-                                motion_score=motion_score,
-                            ))
+                            frames.append(
+                                VideoFrame(
+                                    timestamp=timestamp,
+                                    image_memory=image_memory,
+                                    motion_score=motion_score,
+                                )
+                            )
                         finally:
                             Path(tmp.name).unlink(missing_ok=True)
 
@@ -350,12 +353,14 @@ class VideoProcessor:
             scene_list = detect(str(path), ContentDetector())
 
             for i, scene in enumerate(scene_list):
-                scenes.append({
-                    "index": i,
-                    "start": scene[0].get_seconds(),
-                    "end": scene[1].get_seconds(),
-                    "duration": scene[1].get_seconds() - scene[0].get_seconds(),
-                })
+                scenes.append(
+                    {
+                        "index": i,
+                        "start": scene[0].get_seconds(),
+                        "end": scene[1].get_seconds(),
+                        "duration": scene[1].get_seconds() - scene[0].get_seconds(),
+                    }
+                )
 
         except ImportError:
             # Fallback: detect scene changes using frame differences
@@ -384,12 +389,14 @@ class VideoProcessor:
                         if diff > threshold:
                             # Scene change detected
                             timestamp = frame_idx / fps
-                            scenes.append({
-                                "index": scene_idx,
-                                "start": scene_start,
-                                "end": timestamp,
-                                "duration": timestamp - scene_start,
-                            })
+                            scenes.append(
+                                {
+                                    "index": scene_idx,
+                                    "start": scene_start,
+                                    "end": timestamp,
+                                    "duration": timestamp - scene_start,
+                                }
+                            )
                             scene_start = timestamp
                             scene_idx += 1
 
@@ -399,12 +406,14 @@ class VideoProcessor:
                 # Add final scene
                 final_timestamp = frame_idx / fps
                 if scene_start < final_timestamp:
-                    scenes.append({
-                        "index": scene_idx,
-                        "start": scene_start,
-                        "end": final_timestamp,
-                        "duration": final_timestamp - scene_start,
-                    })
+                    scenes.append(
+                        {
+                            "index": scene_idx,
+                            "start": scene_start,
+                            "end": final_timestamp,
+                            "duration": final_timestamp - scene_start,
+                        }
+                    )
 
                 cap.release()
 
@@ -459,13 +468,15 @@ class VideoProcessor:
                         description = frame.image_memory.description
                         break
 
-            chapters.append({
-                "index": i,
-                "start": scene["start"],
-                "end": scene["end"],
-                "title": f"Scene {i + 1}",
-                "description": description,
-            })
+            chapters.append(
+                {
+                    "index": i,
+                    "start": scene["start"],
+                    "end": scene["end"],
+                    "title": f"Scene {i + 1}",
+                    "description": description,
+                }
+            )
 
         return chapters
 
@@ -522,9 +533,7 @@ class VideoProcessor:
         if not path.exists():
             return
 
-        extensions = extensions or [
-            ".mp4", ".mov", ".avi", ".mkv", ".webm", ".m4v", ".wmv"
-        ]
+        extensions = extensions or [".mp4", ".mov", ".avi", ".mkv", ".webm", ".m4v", ".wmv"]
         pattern = "**/*" if recursive else "*"
 
         for file_path in path.glob(pattern):

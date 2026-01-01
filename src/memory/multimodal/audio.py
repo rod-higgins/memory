@@ -140,9 +140,7 @@ class AudioProcessor:
         # Speaker diarization
         if diarize and self.use_diarization and memory.segments:
             memory.speakers = await self._diarize(path)
-            memory.segments = await self._assign_speakers(
-                memory.segments, path
-            )
+            memory.segments = await self._assign_speakers(memory.segments, path)
 
         # Extract topics and emotions from transcript
         if memory.full_transcript:
@@ -222,20 +220,21 @@ class AudioProcessor:
         try:
             if self._whisper_model is None:
                 import whisper
-                self._whisper_model = whisper.load_model(
-                    self.model_size, device=self.device
-                )
+
+                self._whisper_model = whisper.load_model(self.model_size, device=self.device)
 
             result = self._whisper_model.transcribe(str(path))
 
             segments = []
             for seg in result.get("segments", []):
-                segments.append(AudioSegment(
-                    start_time=seg["start"],
-                    end_time=seg["end"],
-                    text=seg["text"].strip(),
-                    confidence=seg.get("confidence", 1.0),
-                ))
+                segments.append(
+                    AudioSegment(
+                        start_time=seg["start"],
+                        end_time=seg["end"],
+                        text=seg["text"].strip(),
+                        confidence=seg.get("confidence", 1.0),
+                    )
+                )
 
             return {
                 "text": result["text"],
@@ -254,12 +253,14 @@ class AudioProcessor:
                 segments = []
                 full_text = []
                 for seg in segments_iter:
-                    segments.append(AudioSegment(
-                        start_time=seg.start,
-                        end_time=seg.end,
-                        text=seg.text.strip(),
-                        confidence=seg.avg_logprob,
-                    ))
+                    segments.append(
+                        AudioSegment(
+                            start_time=seg.start,
+                            end_time=seg.end,
+                            text=seg.text.strip(),
+                            confidence=seg.avg_logprob,
+                        )
+                    )
                     full_text.append(seg.text)
 
                 return {
@@ -314,11 +315,13 @@ class AudioProcessor:
             # Create speaker timeline
             speaker_timeline = []
             for turn, _, speaker in diarization.itertracks(yield_label=True):
-                speaker_timeline.append({
-                    "start": turn.start,
-                    "end": turn.end,
-                    "speaker": speaker,
-                })
+                speaker_timeline.append(
+                    {
+                        "start": turn.start,
+                        "end": turn.end,
+                        "speaker": speaker,
+                    }
+                )
 
             # Assign speakers to segments
             for segment in segments:
@@ -378,9 +381,7 @@ class AudioProcessor:
         if not path.exists():
             return
 
-        extensions = extensions or [
-            ".mp3", ".wav", ".m4a", ".ogg", ".flac", ".aac", ".wma"
-        ]
+        extensions = extensions or [".mp3", ".wav", ".m4a", ".ogg", ".flac", ".aac", ".wma"]
         pattern = "**/*" if recursive else "*"
 
         for file_path in path.glob(pattern):

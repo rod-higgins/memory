@@ -79,10 +79,7 @@ class LearnedConcept:
             else:
                 self.review_interval_days *= self.ease_factor
 
-            self.ease_factor = max(
-                1.3,
-                self.ease_factor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02))
-            )
+            self.ease_factor = max(1.3, self.ease_factor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02)))
         else:
             # Failed recall - reset
             self.review_interval_days = 1
@@ -306,10 +303,12 @@ class EnhancedLearner:
                 success = feedback != "bad"
 
                 if self._skills[domain].add_experience(xp, success):
-                    results["skill_updates"].append({
-                        "skill": domain,
-                        "new_level": self._skills[domain].level,
-                    })
+                    results["skill_updates"].append(
+                        {
+                            "skill": domain,
+                            "new_level": self._skills[domain].level,
+                        }
+                    )
 
         # Save state
         self._save_state()
@@ -421,10 +420,7 @@ class EnhancedLearner:
     def get_due_reviews(self, limit: int = 10) -> list[LearnedConcept]:
         """Get concepts due for review."""
         now = datetime.now()
-        due = [
-            c for c in self._concepts.values()
-            if c.next_review <= now
-        ]
+        due = [c for c in self._concepts.values() if c.next_review <= now]
         # Sort by oldest first
         due.sort(key=lambda x: x.next_review)
         return due[:limit]
@@ -436,16 +432,9 @@ class EnhancedLearner:
                 "level": skill.level,
                 "xp": skill.experience_points,
                 "interactions": skill.interactions,
-                "success_rate": (
-                    skill.successful_applications / skill.interactions
-                    if skill.interactions > 0 else 0
-                ),
+                "success_rate": (skill.successful_applications / skill.interactions if skill.interactions > 0 else 0),
             }
-            for skill in sorted(
-                self._skills.values(),
-                key=lambda x: x.level,
-                reverse=True
-            )
+            for skill in sorted(self._skills.values(), key=lambda x: x.level, reverse=True)
         }
 
     def get_concept_summary(self) -> dict[str, Any]:
@@ -454,11 +443,13 @@ class EnhancedLearner:
         for concept in self._concepts.values():
             if concept.concept_type not in by_type:
                 by_type[concept.concept_type] = []
-            by_type[concept.concept_type].append({
-                "content": concept.content,
-                "confidence": concept.confidence,
-                "strength": concept.calculate_strength(),
-            })
+            by_type[concept.concept_type].append(
+                {
+                    "content": concept.content,
+                    "confidence": concept.confidence,
+                    "strength": concept.calculate_strength(),
+                }
+            )
 
         return {
             "total": len(self._concepts),
@@ -478,28 +469,34 @@ class EnhancedLearner:
 
         for concept in self.get_strongest_concepts(100):
             if concept.concept_type == "preference":
-                training_data.append({
-                    "messages": [
-                        {"role": "user", "content": f"What do I prefer regarding {concept.content}?"},
-                        {"role": "assistant", "content": f"You prefer {concept.content}."},
-                    ],
-                    "weight": concept.confidence,
-                })
+                training_data.append(
+                    {
+                        "messages": [
+                            {"role": "user", "content": f"What do I prefer regarding {concept.content}?"},
+                            {"role": "assistant", "content": f"You prefer {concept.content}."},
+                        ],
+                        "weight": concept.confidence,
+                    }
+                )
             elif concept.concept_type == "fact":
-                training_data.append({
-                    "messages": [
-                        {"role": "user", "content": f"What do you know about me and {concept.content}?"},
-                        {"role": "assistant", "content": f"You {concept.content}."},
-                    ],
-                    "weight": concept.confidence,
-                })
+                training_data.append(
+                    {
+                        "messages": [
+                            {"role": "user", "content": f"What do you know about me and {concept.content}?"},
+                            {"role": "assistant", "content": f"You {concept.content}."},
+                        ],
+                        "weight": concept.confidence,
+                    }
+                )
             elif concept.concept_type == "skill":
-                training_data.append({
-                    "messages": [
-                        {"role": "user", "content": f"What skills do I have related to {concept.content}?"},
-                        {"role": "assistant", "content": f"You know how to {concept.content}."},
-                    ],
-                    "weight": concept.confidence,
-                })
+                training_data.append(
+                    {
+                        "messages": [
+                            {"role": "user", "content": f"What skills do I have related to {concept.content}?"},
+                            {"role": "assistant", "content": f"You know how to {concept.content}."},
+                        ],
+                        "weight": concept.confidence,
+                    }
+                )
 
         return training_data

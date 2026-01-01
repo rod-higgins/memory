@@ -18,12 +18,14 @@ from typing import Any
 try:
     import torch
     import torch.nn as nn
+
     HAS_TORCH = True
 except ImportError:
     HAS_TORCH = False
 
 try:
     import numpy as np
+
     HAS_NUMPY = True
 except ImportError:
     HAS_NUMPY = False
@@ -161,7 +163,7 @@ class PLMMemoryAdapter:
                 if embedding is None:
                     continue
 
-                memory_id = getattr(memory, 'id', str(loaded))
+                memory_id = getattr(memory, "id", str(loaded))
                 batch_ids.append(memory_id)
 
                 if HAS_TORCH:
@@ -216,18 +218,20 @@ class PLMMemoryAdapter:
         """Query memories from the store."""
         try:
             # Try different store interfaces
-            if hasattr(self.memory_store, 'get_all'):
+            if hasattr(self.memory_store, "get_all"):
                 return await self.memory_store.get_all(limit=limit)
-            elif hasattr(self.memory_store, 'search'):
+            elif hasattr(self.memory_store, "search"):
                 return await self.memory_store.search(
                     query="*",
                     limit=limit,
                     filters={
                         "memory_type": memory_type,
                         "domains": domains,
-                    } if memory_type or domains else None,
+                    }
+                    if memory_type or domains
+                    else None,
                 )
-            elif hasattr(self.memory_store, 'list'):
+            elif hasattr(self.memory_store, "list"):
                 return await self.memory_store.list(limit=limit)
         except Exception:
             pass
@@ -325,11 +329,11 @@ class PLMMemoryAdapter:
 
         # Get memories updated since last sync
         try:
-            if hasattr(self.memory_store, 'get_updated_since'):
+            if hasattr(self.memory_store, "get_updated_since"):
                 updates = await self.memory_store.get_updated_since(self._last_sync)
 
                 for memory in updates:
-                    memory_id = getattr(memory, 'id', None)
+                    memory_id = getattr(memory, "id", None)
                     embedding = getattr(memory, self.config.embedding_field, None)
 
                     if memory_id and embedding is not None:
@@ -396,9 +400,11 @@ def create_memory_attention(
 
     if HAS_TORCH:
         from .core import MemoryAttention as TorchMemoryAttention
+
         attention = TorchMemoryAttention(attention_config)
     else:
         from .core import MemoryAttention
+
         attention = MemoryAttention(attention_config)
 
     adapter = PLMMemoryAdapter(adapter_config, memory_store)
@@ -450,6 +456,7 @@ class MemoryAugmentedInference:
 
         # Injector for adding memory to model
         from .layer import MemoryInjector
+
         self.injector = MemoryInjector(self.adapter.cache)
 
         self._initialized = False
@@ -494,11 +501,9 @@ class MemoryAugmentedInference:
 
         # Get relevant memories
         if query_for_memory is not None:
-            keys, values, memory_ids = self.adapter.get_memory_kv(
-                query_for_memory, self.topk_memories
-            )
-            kwargs['memory_keys'] = keys
-            kwargs['memory_values'] = values
+            keys, values, memory_ids = self.adapter.get_memory_kv(query_for_memory, self.topk_memories)
+            kwargs["memory_keys"] = keys
+            kwargs["memory_values"] = values
 
         # Forward through model
         return self.model(input_ids, attention_mask=attention_mask, **kwargs)
@@ -530,18 +535,18 @@ class MemoryAugmentedInference:
 
         # Get query embedding for memory retrieval
         query_embedding = None
-        if hasattr(self.model, 'get_input_embeddings'):
+        if hasattr(self.model, "get_input_embeddings"):
             with torch.no_grad():
-                input_embeds = self.model.get_input_embeddings()(inputs['input_ids'])
+                input_embeds = self.model.get_input_embeddings()(inputs["input_ids"])
                 query_embedding = input_embeds.mean(dim=1)  # Average pool
 
         # Get memories
         keys, values, _ = self.adapter.get_memory_kv(query_embedding)
 
         # Generate
-        if hasattr(self.model, 'generate'):
+        if hasattr(self.model, "generate"):
             outputs = self.model.generate(
-                inputs['input_ids'],
+                inputs["input_ids"],
                 max_new_tokens=max_new_tokens,
                 memory_keys=keys,
                 memory_values=values,
@@ -549,13 +554,13 @@ class MemoryAugmentedInference:
             )
         else:
             outputs = self.forward(
-                inputs['input_ids'],
+                inputs["input_ids"],
                 memory_keys=keys,
                 memory_values=values,
             )
 
         # Decode
-        if HAS_TORCH and hasattr(outputs, 'shape'):
+        if HAS_TORCH and hasattr(outputs, "shape"):
             return tokenizer.decode(outputs[0], skip_special_tokens=True)
         else:
             return str(outputs)

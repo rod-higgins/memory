@@ -106,7 +106,7 @@ class MemoryAugmenter:
         if not self._slm:
             try:
                 ollama_slm = get_slm_provider(provider="ollama", model="tinyllama")
-                if hasattr(ollama_slm, 'is_available'):
+                if hasattr(ollama_slm, "is_available"):
                     is_avail = await ollama_slm.is_available()
                     if is_avail:
                         self._slm = ollama_slm
@@ -168,10 +168,7 @@ class MemoryAugmenter:
         scores = result.scores
 
         # Filter by relevance score
-        filtered = [
-            (m, s) for m, s in zip(memories, scores)
-            if s >= self._config.min_relevance_score
-        ]
+        filtered = [(m, s) for m, s in zip(memories, scores) if s >= self._config.min_relevance_score]
         memories = [m for m, s in filtered]
         scores = [s for m, s in filtered]
 
@@ -280,7 +277,7 @@ class MemoryAugmenter:
         if synthesize and self._slm:
             try:
                 # Check if SLM is available (for Ollama)
-                if hasattr(self._slm, 'is_available'):
+                if hasattr(self._slm, "is_available"):
                     is_avail = await self._slm.is_available()
                     if not is_avail:
                         # Fall back to raw export
@@ -291,10 +288,7 @@ class MemoryAugmenter:
                         )
 
                 # Extract memory contents for synthesis
-                memory_contents = [
-                    m.summary if m.summary else m.content[:500]
-                    for m in result.memories[:max_memories]
-                ]
+                memory_contents = [m.summary if m.summary else m.content[:500] for m in result.memories[:max_memories]]
 
                 # Synthesize insights
                 synthesized = await self._slm.synthesize_context(
@@ -320,6 +314,7 @@ Based on {len(result.memories)} relevant memories from emails, documents, and in
 
             except Exception as e:
                 import logging
+
                 logging.warning(f"Synthesis failed: {e}")
                 pass  # Fall back to raw export on any error
 

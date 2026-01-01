@@ -63,8 +63,9 @@ class iMessageSource(DataSource):
             for row in cursor:
                 # Convert Apple's timestamp (nanoseconds since 2001-01-01)
                 if row["date"]:
-                    timestamp = datetime(2001, 1, 1) + \
-                        __import__("datetime").timedelta(seconds=row["date"] / 1_000_000_000)
+                    timestamp = datetime(2001, 1, 1) + __import__("datetime").timedelta(
+                        seconds=row["date"] / 1_000_000_000
+                    )
                 else:
                     timestamp = None
 
@@ -91,9 +92,7 @@ class iMessageSource(DataSource):
 
         except sqlite3.OperationalError as e:
             # Permission denied or database locked
-            raise PermissionError(
-                f"Cannot access Messages database. Grant Full Disk Access. Error: {e}"
-            )
+            raise PermissionError(f"Cannot access Messages database. Grant Full Disk Access. Error: {e}")
 
 
 class SlackExportSource(DataSource):
@@ -319,9 +318,7 @@ class WhatsAppExportSource(DataSource):
                                 # Try different date formats
                                 for fmt in ["%d/%m/%Y %H:%M:%S", "%d/%m/%Y %H:%M", "%m/%d/%Y %H:%M"]:
                                     try:
-                                        timestamp = datetime.strptime(
-                                            f"{date_str} {time_str}", fmt
-                                        )
+                                        timestamp = datetime.strptime(f"{date_str} {time_str}", fmt)
                                         break
                                     except ValueError:
                                         continue
@@ -385,6 +382,7 @@ class GmailExportSource(DataSource):
                     if date_str:
                         try:
                             from email.utils import parsedate_to_datetime
+
                             timestamp = parsedate_to_datetime(date_str)
                         except Exception:
                             pass
@@ -487,7 +485,7 @@ class GmailAPISource(DataSource):
         from google_auth_oauthlib.flow import InstalledAppFlow
         from googleapiclient.discovery import build
 
-        SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
+        SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
         creds = None
 
         # Load existing token
@@ -508,17 +506,15 @@ class GmailAPISource(DataSource):
                         "3. Create OAuth 2.0 credentials (Desktop app)\n"
                         "4. Download and save as gmail_credentials.json"
                     )
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    str(self.credentials_path), SCOPES
-                )
+                flow = InstalledAppFlow.from_client_secrets_file(str(self.credentials_path), SCOPES)
                 creds = flow.run_local_server(port=0)
 
             # Save token for future use
             self.token_path.parent.mkdir(parents=True, exist_ok=True)
-            with open(self.token_path, 'w') as token:
+            with open(self.token_path, "w") as token:
                 token.write(creds.to_json())
 
-        return build('gmail', 'v1', credentials=creds)
+        return build("gmail", "v1", credentials=creds)
 
     async def iterate(self) -> AsyncIterator[DataPoint]:
         """Iterate over Gmail messages."""
@@ -529,50 +525,45 @@ class GmailAPISource(DataSource):
             return
 
         # Get list of messages
-        results = service.users().messages().list(
-            userId='me',
-            maxResults=min(500, self.max_emails)
-        ).execute()
+        results = service.users().messages().list(userId="me", maxResults=min(500, self.max_emails)).execute()
 
-        messages = results.get('messages', [])
-        next_page_token = results.get('nextPageToken')
+        messages = results.get("messages", [])
+        next_page_token = results.get("nextPageToken")
 
         # Paginate through all messages
         while next_page_token and len(messages) < self.max_emails:
-            results = service.users().messages().list(
-                userId='me',
-                pageToken=next_page_token,
-                maxResults=min(500, self.max_emails - len(messages))
-            ).execute()
-            messages.extend(results.get('messages', []))
-            next_page_token = results.get('nextPageToken')
+            results = (
+                service.users()
+                .messages()
+                .list(userId="me", pageToken=next_page_token, maxResults=min(500, self.max_emails - len(messages)))
+                .execute()
+            )
+            messages.extend(results.get("messages", []))
+            next_page_token = results.get("nextPageToken")
 
-        for msg_info in messages[:self.max_emails]:
+        for msg_info in messages[: self.max_emails]:
             try:
-                msg = service.users().messages().get(
-                    userId='me',
-                    id=msg_info['id'],
-                    format='full'
-                ).execute()
+                msg = service.users().messages().get(userId="me", id=msg_info["id"], format="full").execute()
 
                 # Extract headers
-                headers = {h['name'].lower(): h['value'] for h in msg['payload'].get('headers', [])}
-                subject = headers.get('subject', '')
-                sender = headers.get('from', '')
-                to = headers.get('to', '')
-                date_str = headers.get('date', '')
+                headers = {h["name"].lower(): h["value"] for h in msg["payload"].get("headers", [])}
+                subject = headers.get("subject", "")
+                sender = headers.get("from", "")
+                to = headers.get("to", "")
+                date_str = headers.get("date", "")
 
                 # Parse date
                 timestamp = None
                 if date_str:
                     try:
                         from email.utils import parsedate_to_datetime
+
                         timestamp = parsedate_to_datetime(date_str)
                     except Exception:
                         pass
 
                 # Get body
-                body = self._get_message_body(msg['payload'])
+                body = self._get_message_body(msg["payload"])
                 if not body and not subject:
                     continue
 
@@ -581,22 +572,22 @@ class GmailAPISource(DataSource):
                     content = content[:10000] + "..."
 
                 # Get labels
-                labels = msg.get('labelIds', [])
+                labels = msg.get("labelIds", [])
 
                 yield DataPoint(
                     content=content,
                     category=self.category,
                     source_type=self.source_type,
-                    source_id=msg_info['id'],
+                    source_id=msg_info["id"],
                     original_date=timestamp,
                     raw_data={
                         "subject": subject,
                         "from": sender,
                         "to": to,
                         "labels": labels,
-                        "thread_id": msg.get('threadId'),
+                        "thread_id": msg.get("threadId"),
                     },
-                    topics=["email", "gmail"] + [l.lower() for l in labels if not l.startswith('CATEGORY_')],
+                    topics=["email", "gmail"] + [l.lower() for l in labels if not l.startswith("CATEGORY_")],
                 )
 
             except Exception:
@@ -607,18 +598,20 @@ class GmailAPISource(DataSource):
         """Extract text body from message payload."""
         body = ""
 
-        if 'body' in payload and payload['body'].get('data'):
+        if "body" in payload and payload["body"].get("data"):
             import base64
-            body = base64.urlsafe_b64decode(payload['body']['data']).decode('utf-8', errors='ignore')
 
-        elif 'parts' in payload:
-            for part in payload['parts']:
-                if part.get('mimeType') == 'text/plain':
-                    if 'body' in part and part['body'].get('data'):
+            body = base64.urlsafe_b64decode(payload["body"]["data"]).decode("utf-8", errors="ignore")
+
+        elif "parts" in payload:
+            for part in payload["parts"]:
+                if part.get("mimeType") == "text/plain":
+                    if "body" in part and part["body"].get("data"):
                         import base64
-                        body = base64.urlsafe_b64decode(part['body']['data']).decode('utf-8', errors='ignore')
+
+                        body = base64.urlsafe_b64decode(part["body"]["data"]).decode("utf-8", errors="ignore")
                         break
-                elif 'parts' in part:
+                elif "parts" in part:
                     # Nested multipart
                     body = self._get_message_body(part)
                     if body:
@@ -678,6 +671,7 @@ class AppleMailSource(DataSource):
                 if date_str:
                     try:
                         from email.utils import parsedate_to_datetime
+
                         timestamp = parsedate_to_datetime(date_str)
                     except Exception:
                         pass

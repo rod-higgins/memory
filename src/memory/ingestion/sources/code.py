@@ -79,15 +79,16 @@ class LocalGitSource(DataSource):
                 async for dp in self._iterate_code(repo_path, repo_name):
                     yield dp
 
-    async def _iterate_commits(
-        self, repo_path: Path, repo_name: str
-    ) -> AsyncIterator[DataPoint]:
+    async def _iterate_commits(self, repo_path: Path, repo_name: str) -> AsyncIterator[DataPoint]:
         """Iterate over commits in a repository."""
         try:
             # Get commit log
             result = subprocess.run(
                 [
-                    "git", "-C", str(repo_path), "log",
+                    "git",
+                    "-C",
+                    str(repo_path),
+                    "log",
                     f"--max-count={self.max_commits}",
                     "--format=%H|%an|%ae|%at|%s|%b",
                     "--no-merges",
@@ -139,15 +140,33 @@ class LocalGitSource(DataSource):
         except Exception:
             pass
 
-    async def _iterate_code(
-        self, repo_path: Path, repo_name: str
-    ) -> AsyncIterator[DataPoint]:
+    async def _iterate_code(self, repo_path: Path, repo_name: str) -> AsyncIterator[DataPoint]:
         """Iterate over code files in a repository."""
         # Common code file extensions
         code_extensions = {
-            ".py", ".js", ".ts", ".jsx", ".tsx", ".java", ".go", ".rs",
-            ".c", ".cpp", ".h", ".hpp", ".cs", ".rb", ".php", ".swift",
-            ".kt", ".scala", ".sh", ".bash", ".zsh", ".sql", ".r",
+            ".py",
+            ".js",
+            ".ts",
+            ".jsx",
+            ".tsx",
+            ".java",
+            ".go",
+            ".rs",
+            ".c",
+            ".cpp",
+            ".h",
+            ".hpp",
+            ".cs",
+            ".rb",
+            ".php",
+            ".swift",
+            ".kt",
+            ".scala",
+            ".sh",
+            ".bash",
+            ".zsh",
+            ".sql",
+            ".r",
         }
 
         for file_path in repo_path.glob("**/*"):
@@ -158,10 +177,19 @@ class LocalGitSource(DataSource):
                 continue
 
             # Skip common non-source directories
-            if any(x in str(file_path) for x in [
-                "node_modules", "vendor", ".git", "__pycache__",
-                "venv", ".venv", "build", "dist",
-            ]):
+            if any(
+                x in str(file_path)
+                for x in [
+                    "node_modules",
+                    "vendor",
+                    ".git",
+                    "__pycache__",
+                    "venv",
+                    ".venv",
+                    "build",
+                    "dist",
+                ]
+            ):
                 continue
 
             try:
@@ -284,9 +312,7 @@ class GitHubSource(DataSource):
                 async for dp in self._iterate_stars(client, username):
                     yield dp
 
-    async def _iterate_repos(
-        self, client, username: str
-    ) -> AsyncIterator[DataPoint]:
+    async def _iterate_repos(self, client, username: str) -> AsyncIterator[DataPoint]:
         """Iterate over user's repositories."""
         page = 1
         while True:
@@ -313,9 +339,7 @@ class GitHubSource(DataSource):
                     updated = None
                     if repo.get("updated_at"):
                         try:
-                            updated = datetime.fromisoformat(
-                                repo["updated_at"].replace("Z", "+00:00")
-                            )
+                            updated = datetime.fromisoformat(repo["updated_at"].replace("Z", "+00:00"))
                         except ValueError:
                             pass
 
@@ -344,9 +368,7 @@ class GitHubSource(DataSource):
             except Exception:
                 break
 
-    async def _iterate_issues(
-        self, client, username: str
-    ) -> AsyncIterator[DataPoint]:
+    async def _iterate_issues(self, client, username: str) -> AsyncIterator[DataPoint]:
         """Iterate over issues created by user."""
         page = 1
         while True:
@@ -379,9 +401,7 @@ class GitHubSource(DataSource):
                     created = None
                     if issue.get("created_at"):
                         try:
-                            created = datetime.fromisoformat(
-                                issue["created_at"].replace("Z", "+00:00")
-                            )
+                            created = datetime.fromisoformat(issue["created_at"].replace("Z", "+00:00"))
                         except ValueError:
                             pass
 
@@ -406,9 +426,7 @@ class GitHubSource(DataSource):
             except Exception:
                 break
 
-    async def _iterate_prs(
-        self, client, username: str
-    ) -> AsyncIterator[DataPoint]:
+    async def _iterate_prs(self, client, username: str) -> AsyncIterator[DataPoint]:
         """Iterate over pull requests by user."""
         page = 1
         while True:
@@ -441,9 +459,7 @@ class GitHubSource(DataSource):
                     created = None
                     if pr.get("created_at"):
                         try:
-                            created = datetime.fromisoformat(
-                                pr["created_at"].replace("Z", "+00:00")
-                            )
+                            created = datetime.fromisoformat(pr["created_at"].replace("Z", "+00:00"))
                         except ValueError:
                             pass
 
@@ -468,9 +484,7 @@ class GitHubSource(DataSource):
             except Exception:
                 break
 
-    async def _iterate_stars(
-        self, client, username: str
-    ) -> AsyncIterator[DataPoint]:
+    async def _iterate_stars(self, client, username: str) -> AsyncIterator[DataPoint]:
         """Iterate over starred repositories."""
         page = 1
         while True:
@@ -588,9 +602,7 @@ class GitLabSource(DataSource):
                             updated = None
                             if proj.get("last_activity_at"):
                                 try:
-                                    updated = datetime.fromisoformat(
-                                        proj["last_activity_at"].replace("Z", "+00:00")
-                                    )
+                                    updated = datetime.fromisoformat(proj["last_activity_at"].replace("Z", "+00:00"))
                                 except ValueError:
                                     pass
 
@@ -643,9 +655,7 @@ class GitLabSource(DataSource):
                             created = None
                             if issue.get("created_at"):
                                 try:
-                                    created = datetime.fromisoformat(
-                                        issue["created_at"].replace("Z", "+00:00")
-                                    )
+                                    created = datetime.fromisoformat(issue["created_at"].replace("Z", "+00:00"))
                                 except ValueError:
                                     pass
 
@@ -698,9 +708,7 @@ class GitLabSource(DataSource):
                             created = None
                             if mr.get("created_at"):
                                 try:
-                                    created = datetime.fromisoformat(
-                                        mr["created_at"].replace("Z", "+00:00")
-                                    )
+                                    created = datetime.fromisoformat(mr["created_at"].replace("Z", "+00:00"))
                                 except ValueError:
                                     pass
 

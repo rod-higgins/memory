@@ -89,9 +89,7 @@ class AWSSource(DataSource):
 
         # Run in thread pool to avoid blocking
         loop = asyncio.get_event_loop()
-        result = await loop.run_in_executor(
-            None, lambda: self._run_aws_command(["sts", "get-caller-identity"])
-        )
+        result = await loop.run_in_executor(None, lambda: self._run_aws_command(["sts", "get-caller-identity"]))
         self._cli_available = result is not None
         return self._cli_available
 
@@ -105,16 +103,12 @@ class AWSSource(DataSource):
         loop = asyncio.get_event_loop()
 
         if self._include_s3:
-            buckets = await loop.run_in_executor(
-                None, lambda: self._run_aws_command(["s3api", "list-buckets"])
-            )
+            buckets = await loop.run_in_executor(None, lambda: self._run_aws_command(["s3api", "list-buckets"]))
             if buckets and "Buckets" in buckets:
                 count += len(buckets["Buckets"]) * 10  # Estimate objects per bucket
 
         if self._include_lambda:
-            functions = await loop.run_in_executor(
-                None, lambda: self._run_aws_command(["lambda", "list-functions"])
-            )
+            functions = await loop.run_in_executor(None, lambda: self._run_aws_command(["lambda", "list-functions"]))
             if functions and "Functions" in functions:
                 count += len(functions["Functions"])
 
@@ -128,9 +122,7 @@ class AWSSource(DataSource):
         loop = asyncio.get_event_loop()
 
         # Get caller identity for context
-        identity = await loop.run_in_executor(
-            None, lambda: self._run_aws_command(["sts", "get-caller-identity"])
-        )
+        identity = await loop.run_in_executor(None, lambda: self._run_aws_command(["sts", "get-caller-identity"]))
         account_id = identity.get("Account", "unknown") if identity else "unknown"
 
         # S3 Buckets
@@ -163,13 +155,9 @@ class AWSSource(DataSource):
             async for dp in self._iterate_iam(loop, account_id):
                 yield dp
 
-    async def _iterate_s3(
-        self, loop: asyncio.AbstractEventLoop, account_id: str
-    ) -> AsyncIterator[DataPoint]:
+    async def _iterate_s3(self, loop: asyncio.AbstractEventLoop, account_id: str) -> AsyncIterator[DataPoint]:
         """Iterate through S3 buckets."""
-        buckets = await loop.run_in_executor(
-            None, lambda: self._run_aws_command(["s3api", "list-buckets"])
-        )
+        buckets = await loop.run_in_executor(None, lambda: self._run_aws_command(["s3api", "list-buckets"]))
 
         if not buckets or "Buckets" not in buckets:
             return
@@ -191,13 +179,9 @@ class AWSSource(DataSource):
                 raw_data=bucket,
             )
 
-    async def _iterate_lambda(
-        self, loop: asyncio.AbstractEventLoop, account_id: str
-    ) -> AsyncIterator[DataPoint]:
+    async def _iterate_lambda(self, loop: asyncio.AbstractEventLoop, account_id: str) -> AsyncIterator[DataPoint]:
         """Iterate through Lambda functions."""
-        functions = await loop.run_in_executor(
-            None, lambda: self._run_aws_command(["lambda", "list-functions"])
-        )
+        functions = await loop.run_in_executor(None, lambda: self._run_aws_command(["lambda", "list-functions"]))
 
         if not functions or "Functions" not in functions:
             return
@@ -229,13 +213,9 @@ class AWSSource(DataSource):
                 raw_data=func,
             )
 
-    async def _iterate_ec2(
-        self, loop: asyncio.AbstractEventLoop, account_id: str
-    ) -> AsyncIterator[DataPoint]:
+    async def _iterate_ec2(self, loop: asyncio.AbstractEventLoop, account_id: str) -> AsyncIterator[DataPoint]:
         """Iterate through EC2 instances."""
-        reservations = await loop.run_in_executor(
-            None, lambda: self._run_aws_command(["ec2", "describe-instances"])
-        )
+        reservations = await loop.run_in_executor(None, lambda: self._run_aws_command(["ec2", "describe-instances"]))
 
         if not reservations or "Reservations" not in reservations:
             return
@@ -273,13 +253,9 @@ class AWSSource(DataSource):
                     raw_data=instance,
                 )
 
-    async def _iterate_dynamodb(
-        self, loop: asyncio.AbstractEventLoop, account_id: str
-    ) -> AsyncIterator[DataPoint]:
+    async def _iterate_dynamodb(self, loop: asyncio.AbstractEventLoop, account_id: str) -> AsyncIterator[DataPoint]:
         """Iterate through DynamoDB tables."""
-        tables = await loop.run_in_executor(
-            None, lambda: self._run_aws_command(["dynamodb", "list-tables"])
-        )
+        tables = await loop.run_in_executor(None, lambda: self._run_aws_command(["dynamodb", "list-tables"]))
 
         if not tables or "TableNames" not in tables:
             return
@@ -288,9 +264,7 @@ class AWSSource(DataSource):
             # Get table details
             table_info = await loop.run_in_executor(
                 None,
-                lambda tn=table_name: self._run_aws_command(
-                    ["dynamodb", "describe-table", "--table-name", tn]
-                ),
+                lambda tn=table_name: self._run_aws_command(["dynamodb", "describe-table", "--table-name", tn]),
             )
 
             if table_info and "Table" in table_info:
@@ -317,13 +291,9 @@ class AWSSource(DataSource):
                     raw_data=table,
                 )
 
-    async def _iterate_cloudwatch(
-        self, loop: asyncio.AbstractEventLoop, account_id: str
-    ) -> AsyncIterator[DataPoint]:
+    async def _iterate_cloudwatch(self, loop: asyncio.AbstractEventLoop, account_id: str) -> AsyncIterator[DataPoint]:
         """Iterate through CloudWatch log groups."""
-        log_groups = await loop.run_in_executor(
-            None, lambda: self._run_aws_command(["logs", "describe-log-groups"])
-        )
+        log_groups = await loop.run_in_executor(None, lambda: self._run_aws_command(["logs", "describe-log-groups"]))
 
         if not log_groups or "logGroups" not in log_groups:
             return
@@ -355,14 +325,10 @@ class AWSSource(DataSource):
                 raw_data=group,
             )
 
-    async def _iterate_iam(
-        self, loop: asyncio.AbstractEventLoop, account_id: str
-    ) -> AsyncIterator[DataPoint]:
+    async def _iterate_iam(self, loop: asyncio.AbstractEventLoop, account_id: str) -> AsyncIterator[DataPoint]:
         """Iterate through IAM users and roles."""
         # Users
-        users = await loop.run_in_executor(
-            None, lambda: self._run_aws_command(["iam", "list-users"])
-        )
+        users = await loop.run_in_executor(None, lambda: self._run_aws_command(["iam", "list-users"]))
 
         if users and "Users" in users:
             for user in users["Users"]:
@@ -384,9 +350,7 @@ class AWSSource(DataSource):
                 )
 
         # Roles
-        roles = await loop.run_in_executor(
-            None, lambda: self._run_aws_command(["iam", "list-roles"])
-        )
+        roles = await loop.run_in_executor(None, lambda: self._run_aws_command(["iam", "list-roles"]))
 
         if roles and "Roles" in roles:
             for role in roles["Roles"]:
@@ -395,12 +359,7 @@ class AWSSource(DataSource):
                 arn = role.get("Arn", "")
                 description = role.get("Description", "")
 
-                content = (
-                    f"IAM Role: {role_name}\n"
-                    f"Description: {description}\n"
-                    f"ARN: {arn}\n"
-                    f"Created: {create_date}"
-                )
+                content = f"IAM Role: {role_name}\nDescription: {description}\nARN: {arn}\nCreated: {create_date}"
 
                 yield DataPoint(
                     content=content,

@@ -96,9 +96,7 @@ class ConfidenceScore(BaseModel):
         corroboration_weight = min(self.corroboration_count / 5, 1.0) * 0.3
         contradiction_penalty = min(self.contradiction_count / 3, 1.0) * 0.2
 
-        self.overall = max(
-            0.0, min(1.0, base + recency_weight + corroboration_weight - contradiction_penalty)
-        )
+        self.overall = max(0.0, min(1.0, base + recency_weight + corroboration_weight - contradiction_penalty))
         return self.overall
 
     @classmethod

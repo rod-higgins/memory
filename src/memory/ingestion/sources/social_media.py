@@ -107,9 +107,7 @@ class TwitterExportParser:
                 # Parse timestamp
                 created_at = tweet.get("created_at", "")
                 try:
-                    timestamp = datetime.strptime(
-                        created_at, "%a %b %d %H:%M:%S %z %Y"
-                    )
+                    timestamp = datetime.strptime(created_at, "%a %b %d %H:%M:%S %z %Y")
                 except (ValueError, TypeError):
                     timestamp = datetime.now()
 
@@ -293,7 +291,7 @@ class FacebookExportParser:
             messages = data.get("messages", [])
 
             # Only get messages you sent
-            for msg in messages[:limit * 2]:
+            for msg in messages[: limit * 2]:
                 if msg.get("sender_name", "").lower() == "you":
                     continue  # Skip, we want our own messages
 

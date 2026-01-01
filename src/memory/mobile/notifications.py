@@ -264,12 +264,14 @@ class NotificationService:
         token: str,
     ) -> bool:
         """Send notification via APNs."""
-        if not all([
-            self.apns_key_path,
-            self.apns_key_id,
-            self.apns_team_id,
-            self.apns_bundle_id,
-        ]):
+        if not all(
+            [
+                self.apns_key_path,
+                self.apns_key_id,
+                self.apns_team_id,
+                self.apns_bundle_id,
+            ]
+        ):
             return False
 
         try:
@@ -310,10 +312,13 @@ class NotificationService:
                     headers={
                         "authorization": f"bearer {jwt_token}",
                         "apns-topic": self.apns_bundle_id,
-                        "apns-priority": "10" if notification.priority in [
+                        "apns-priority": "10"
+                        if notification.priority
+                        in [
                             NotificationPriority.HIGH,
                             NotificationPriority.URGENT,
-                        ] else "5",
+                        ]
+                        else "5",
                     },
                     json=payload,
                     timeout=30.0,
@@ -544,12 +549,6 @@ class NotificationService:
             "registered_devices": len(self.device_tokens),
             "pending": len(self.pending),
             "scheduled": len(self.scheduled),
-            "sent_today": len([
-                n for n in self.sent
-                if n.sent_at and n.sent_at.date() == datetime.now().date()
-            ]),
-            "failed_today": len([
-                (n, _) for n, _ in self.failed
-                if n.created_at.date() == datetime.now().date()
-            ]),
+            "sent_today": len([n for n in self.sent if n.sent_at and n.sent_at.date() == datetime.now().date()]),
+            "failed_today": len([(n, _) for n, _ in self.failed if n.created_at.date() == datetime.now().date()]),
         }

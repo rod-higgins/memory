@@ -1,6 +1,5 @@
 """Tests for storage backends."""
 
-
 import pytest
 
 
@@ -54,6 +53,7 @@ class TestDictStore:
     async def test_get_nonexistent(self, dict_store):
         """Test getting a non-existent entry."""
         from uuid import uuid4
+
         result = await dict_store.get(uuid4())
         assert result is None
 

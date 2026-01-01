@@ -21,14 +21,19 @@ except ImportError:
         def get(self, *args, **kwargs):
             def decorator(f):
                 return f
+
             return decorator
+
         def post(self, *args, **kwargs):
             def decorator(f):
                 return f
+
             return decorator
+
         def delete(self, *args, **kwargs):
             def decorator(f):
                 return f
+
             return decorator
 
     class BaseModel:
@@ -38,6 +43,7 @@ except ImportError:
         def __init__(self, status_code: int, detail: str):
             self.status_code = status_code
             self.detail = detail
+
 
 from ..federated import (
     AggregationStrategy,

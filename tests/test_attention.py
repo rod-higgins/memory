@@ -1,6 +1,5 @@
 """Tests for memory-augmented attention module."""
 
-
 import pytest
 
 

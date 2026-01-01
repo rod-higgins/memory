@@ -136,10 +136,7 @@ class MemoryQuery:
 
         # Filter by exclusions
         if context and context.exclude_ids:
-            filtered = [
-                (m, s) for m, s in zip(memories, scores)
-                if m.id not in context.exclude_ids
-            ]
+            filtered = [(m, s) for m, s in zip(memories, scores) if m.id not in context.exclude_ids]
             memories = [m for m, s in filtered]
             scores = [s for m, s in filtered]
 
@@ -392,8 +389,7 @@ class MemoryQuery:
 
         # Filter to those in same domains
         potential = [
-            (m, s) for m, s in zip(result.memories, result.scores)
-            if any(d in memory.domains for d in m.domains)
+            (m, s) for m, s in zip(result.memories, result.scores) if any(d in memory.domains for d in m.domains)
         ][:limit]
 
         return QueryResult(
@@ -441,8 +437,8 @@ class MemoryQuery:
                 adjusted_score *= 1.3
 
             # Boost high-confidence memories
-            if mem.confidence and hasattr(mem.confidence, 'overall'):
-                adjusted_score *= (0.7 + mem.confidence.overall * 0.3)
+            if mem.confidence and hasattr(mem.confidence, "overall"):
+                adjusted_score *= 0.7 + mem.confidence.overall * 0.3
 
             # Boost memories with summaries (indicates processed content)
             if mem.summary and len(mem.summary) > 20:

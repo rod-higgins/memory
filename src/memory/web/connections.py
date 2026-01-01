@@ -200,18 +200,14 @@ class CredentialStore:
         """Get a connection by ID."""
         with sqlite3.connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row
-            row = conn.execute(
-                "SELECT * FROM connections WHERE id = ?", (connection_id,)
-            ).fetchone()
+            row = conn.execute("SELECT * FROM connections WHERE id = ?", (connection_id,)).fetchone()
 
             if not row:
                 return None
 
             return self._row_to_config(row)
 
-    def list_connections(
-        self, source_id: str | None = None
-    ) -> list[ConnectionConfig]:
+    def list_connections(self, source_id: str | None = None) -> list[ConnectionConfig]:
         """List all connections, optionally filtered by source."""
         with sqlite3.connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row
@@ -222,9 +218,7 @@ class CredentialStore:
                     (source_id,),
                 ).fetchall()
             else:
-                rows = conn.execute(
-                    "SELECT * FROM connections ORDER BY name"
-                ).fetchall()
+                rows = conn.execute("SELECT * FROM connections ORDER BY name").fetchall()
 
             return [self._row_to_config(row) for row in rows]
 
@@ -237,9 +231,7 @@ class CredentialStore:
                 (connection_id,),
             )
             # Delete connection
-            cursor = conn.execute(
-                "DELETE FROM connections WHERE id = ?", (connection_id,)
-            )
+            cursor = conn.execute("DELETE FROM connections WHERE id = ?", (connection_id,))
             return cursor.rowcount > 0
 
     def update_status(
@@ -315,16 +307,10 @@ class CredentialStore:
             return {
                 "access_token": self.decrypt(row["access_token_encrypted"]),
                 "refresh_token": (
-                    self.decrypt(row["refresh_token_encrypted"])
-                    if row["refresh_token_encrypted"]
-                    else None
+                    self.decrypt(row["refresh_token_encrypted"]) if row["refresh_token_encrypted"] else None
                 ),
                 "token_type": row["token_type"],
-                "expires_at": (
-                    datetime.fromisoformat(row["expires_at"])
-                    if row["expires_at"]
-                    else None
-                ),
+                "expires_at": (datetime.fromisoformat(row["expires_at"]) if row["expires_at"] else None),
                 "scope": row["scope"],
             }
 
@@ -350,11 +336,7 @@ class CredentialStore:
             status=ConnectionStatus(row["status"]),
             credentials=credentials,
             settings=settings,
-            last_sync=(
-                datetime.fromisoformat(row["last_sync"])
-                if row["last_sync"]
-                else None
-            ),
+            last_sync=(datetime.fromisoformat(row["last_sync"]) if row["last_sync"] else None),
             last_error=row["last_error"],
             created_at=datetime.fromisoformat(row["created_at"]),
             updated_at=datetime.fromisoformat(row["updated_at"]),
@@ -447,7 +429,12 @@ class ConnectionManager:
             "imessage": {
                 "auth_type": AuthType.FILE_PATH,
                 "fields": [
-                    {"name": "db_path", "label": "Messages DB Path", "type": "file", "default": "~/Library/Messages/chat.db"},
+                    {
+                        "name": "db_path",
+                        "label": "Messages DB Path",
+                        "type": "file",
+                        "default": "~/Library/Messages/chat.db",
+                    },
                 ],
                 "description": "Requires Full Disk Access permission",
             },
@@ -489,7 +476,12 @@ class ConnectionManager:
             "apple_notes": {
                 "auth_type": AuthType.FILE_PATH,
                 "fields": [
-                    {"name": "db_path", "label": "Notes DB Path", "type": "file", "default": "~/Library/Group Containers/group.com.apple.notes/NoteStore.sqlite"},
+                    {
+                        "name": "db_path",
+                        "label": "Notes DB Path",
+                        "type": "file",
+                        "default": "~/Library/Group Containers/group.com.apple.notes/NoteStore.sqlite",
+                    },
                 ],
                 "description": "Requires Full Disk Access permission",
             },
@@ -497,7 +489,12 @@ class ConnectionManager:
                 "auth_type": AuthType.FILE_PATH,
                 "fields": [
                     {"name": "path", "label": "Documents Path", "type": "directory"},
-                    {"name": "extensions", "label": "File Extensions", "type": "text", "default": ".txt,.md,.docx,.pdf"},
+                    {
+                        "name": "extensions",
+                        "label": "File Extensions",
+                        "type": "text",
+                        "default": ".txt,.md,.docx,.pdf",
+                    },
                 ],
                 "description": "Path to your documents folder",
             },
@@ -529,7 +526,12 @@ class ConnectionManager:
             "claude_history": {
                 "auth_type": AuthType.FILE_PATH,
                 "fields": [
-                    {"name": "history_path", "label": "History File", "type": "file", "default": "~/.claude/history.jsonl"},
+                    {
+                        "name": "history_path",
+                        "label": "History File",
+                        "type": "file",
+                        "default": "~/.claude/history.jsonl",
+                    },
                 ],
                 "description": "Claude Code conversation history",
             },
@@ -544,7 +546,12 @@ class ConnectionManager:
             "apple_photos": {
                 "auth_type": AuthType.FILE_PATH,
                 "fields": [
-                    {"name": "library_path", "label": "Photos Library", "type": "file", "default": "~/Pictures/Photos Library.photoslibrary"},
+                    {
+                        "name": "library_path",
+                        "label": "Photos Library",
+                        "type": "file",
+                        "default": "~/Pictures/Photos Library.photoslibrary",
+                    },
                 ],
                 "description": "Requires Photos access permission",
             },
@@ -579,21 +586,36 @@ class ConnectionManager:
             "chrome_history": {
                 "auth_type": AuthType.FILE_PATH,
                 "fields": [
-                    {"name": "profile_path", "label": "Chrome Profile", "type": "directory", "default": "~/Library/Application Support/Google/Chrome/Default"},
+                    {
+                        "name": "profile_path",
+                        "label": "Chrome Profile",
+                        "type": "directory",
+                        "default": "~/Library/Application Support/Google/Chrome/Default",
+                    },
                 ],
                 "description": "Chrome browser history",
             },
             "safari_history": {
                 "auth_type": AuthType.FILE_PATH,
                 "fields": [
-                    {"name": "db_path", "label": "History DB", "type": "file", "default": "~/Library/Safari/History.db"},
+                    {
+                        "name": "db_path",
+                        "label": "History DB",
+                        "type": "file",
+                        "default": "~/Library/Safari/History.db",
+                    },
                 ],
                 "description": "Safari browser history",
             },
             "bookmarks": {
                 "auth_type": AuthType.FILE_PATH,
                 "fields": [
-                    {"name": "browser", "label": "Browser", "type": "select", "options": ["chrome", "safari", "firefox"]},
+                    {
+                        "name": "browser",
+                        "label": "Browser",
+                        "type": "select",
+                        "options": ["chrome", "safari", "firefox"],
+                    },
                 ],
                 "description": "Browser bookmarks",
             },
@@ -601,7 +623,12 @@ class ConnectionManager:
             "apple_calendar": {
                 "auth_type": AuthType.FILE_PATH,
                 "fields": [
-                    {"name": "calendar_path", "label": "Calendar Path", "type": "directory", "default": "~/Library/Calendars"},
+                    {
+                        "name": "calendar_path",
+                        "label": "Calendar Path",
+                        "type": "directory",
+                        "default": "~/Library/Calendars",
+                    },
                 ],
                 "description": "Apple Calendar events",
             },
@@ -666,7 +693,11 @@ class ConnectionManager:
         try:
             # Test based on auth type
             if config.auth_type == AuthType.FILE_PATH:
-                path = config.credentials.get("path") or config.credentials.get("db_path") or config.credentials.get("vault_path")
+                path = (
+                    config.credentials.get("path")
+                    or config.credentials.get("db_path")
+                    or config.credentials.get("vault_path")
+                )
                 if path:
                     expanded = Path(path).expanduser()
                     if not expanded.exists():
@@ -747,18 +778,25 @@ class ConnectionManager:
         result = []
         for source in sources:
             source_id = source["id"]
-            auth_config = self._source_auth_config.get(source_id, {
-                "auth_type": AuthType.NONE,
-                "fields": [],
-                "description": source.get("description", ""),
-            })
+            auth_config = self._source_auth_config.get(
+                source_id,
+                {
+                    "auth_type": AuthType.NONE,
+                    "fields": [],
+                    "description": source.get("description", ""),
+                },
+            )
 
-            result.append({
-                **source,
-                "auth_type": auth_config.get("auth_type", AuthType.NONE).value if isinstance(auth_config.get("auth_type"), AuthType) else auth_config.get("auth_type", "none"),
-                "auth_fields": auth_config.get("fields", []),
-                "auth_description": auth_config.get("description", ""),
-                "oauth_config": auth_config.get("oauth_config"),
-            })
+            result.append(
+                {
+                    **source,
+                    "auth_type": auth_config.get("auth_type", AuthType.NONE).value
+                    if isinstance(auth_config.get("auth_type"), AuthType)
+                    else auth_config.get("auth_type", "none"),
+                    "auth_fields": auth_config.get("fields", []),
+                    "auth_description": auth_config.get("description", ""),
+                    "oauth_config": auth_config.get("oauth_config"),
+                }
+            )
 
         return result

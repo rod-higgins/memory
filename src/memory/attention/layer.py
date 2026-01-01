@@ -19,6 +19,7 @@ try:
     import torch
     import torch.nn as nn
     import torch.nn.functional as F
+
     HAS_TORCH = True
 except ImportError:
     HAS_TORCH = False
@@ -125,7 +126,8 @@ if HAS_TORCH:
             if self.pre_norm:
                 normed = self.norm1(x)
                 attn_out = self.attention(
-                    normed, normed,
+                    normed,
+                    normed,
                     memory_keys=memory_keys,
                     memory_values=memory_values,
                     attention_mask=attention_mask,
@@ -135,7 +137,8 @@ if HAS_TORCH:
                 x = x + attn_out.output
             else:
                 attn_out = self.attention(
-                    x, x,
+                    x,
+                    x,
                     memory_keys=memory_keys,
                     memory_values=memory_values,
                     attention_mask=attention_mask,
@@ -153,17 +156,17 @@ if HAS_TORCH:
                 x = self.norm2(x + ff_out)
 
             # Optional: memory attention in FF pathway
-            if hasattr(self, 'ff_memory_attn') and memory_keys is not None:
+            if hasattr(self, "ff_memory_attn") and memory_keys is not None:
                 if self.pre_norm:
                     mem_ff_out = self.ff_memory_attn(
-                        self.norm_ff_mem(x), None,
+                        self.norm_ff_mem(x),
+                        None,
                         memory_keys=memory_keys,
                         memory_values=memory_values,
                     )
                     x = x + mem_ff_out.output * 0.1  # Small contribution
 
             return x, attn_out if return_attention else None
-
 
     class MemoryAugmentedTransformer(nn.Module):
         """
@@ -327,7 +330,7 @@ if HAS_TORCH:
                 # Top-k filtering
                 if top_k > 0:
                     v, _ = torch.topk(logits, min(top_k, logits.size(-1)))
-                    logits[logits < v[:, [-1]]] = float('-inf')
+                    logits[logits < v[:, [-1]]] = float("-inf")
 
                 # Top-p (nucleus) filtering
                 if top_p < 1.0:
@@ -336,10 +339,8 @@ if HAS_TORCH:
                     sorted_indices_to_remove = cumulative_probs > top_p
                     sorted_indices_to_remove[..., 1:] = sorted_indices_to_remove[..., :-1].clone()
                     sorted_indices_to_remove[..., 0] = 0
-                    indices_to_remove = sorted_indices_to_remove.scatter(
-                        1, sorted_indices, sorted_indices_to_remove
-                    )
-                    logits[indices_to_remove] = float('-inf')
+                    indices_to_remove = sorted_indices_to_remove.scatter(1, sorted_indices, sorted_indices_to_remove)
+                    logits[indices_to_remove] = float("-inf")
 
                 # Sample
                 probs = F.softmax(logits, dim=-1)
@@ -347,7 +348,6 @@ if HAS_TORCH:
                 input_ids = torch.cat([input_ids, next_token], dim=1)
 
             return input_ids
-
 
     class MemoryInjector:
         """
@@ -401,18 +401,18 @@ if HAS_TORCH:
         def _find_layers(self, model: nn.Module) -> list[nn.Module]:
             """Find transformer layers in model."""
             # Try common architectures
-            if hasattr(model, 'transformer') and hasattr(model.transformer, 'h'):
+            if hasattr(model, "transformer") and hasattr(model.transformer, "h"):
                 return list(model.transformer.h)
-            if hasattr(model, 'encoder') and hasattr(model.encoder, 'layer'):
+            if hasattr(model, "encoder") and hasattr(model.encoder, "layer"):
                 return list(model.encoder.layer)
-            if hasattr(model, 'layers'):
+            if hasattr(model, "layers"):
                 return list(model.layers)
-            if hasattr(model, 'h'):
+            if hasattr(model, "h"):
                 return list(model.h)
 
             # Search recursively
             for name, child in model.named_children():
-                if 'layer' in name.lower() or 'block' in name.lower():
+                if "layer" in name.lower() or "block" in name.lower():
                     if isinstance(child, nn.ModuleList):
                         return list(child)
 
@@ -428,9 +428,9 @@ if HAS_TORCH:
             # Find attention module
             if hasattr(layer, attention_module_name):
                 attn = getattr(layer, attention_module_name)
-            elif hasattr(layer, 'self_attn'):
+            elif hasattr(layer, "self_attn"):
                 attn = layer.self_attn
-            elif hasattr(layer, 'attention'):
+            elif hasattr(layer, "attention"):
                 attn = layer.attention
             else:
                 return
@@ -483,7 +483,7 @@ if HAS_TORCH:
             for idx, original_forward in self._original_forwards.items():
                 if idx < len(transformer_layers):
                     layer = transformer_layers[idx]
-                    for name in ['attn', 'self_attn', 'attention']:
+                    for name in ["attn", "self_attn", "attention"]:
                         if hasattr(layer, name):
                             getattr(layer, name).forward = original_forward
                             break
@@ -497,11 +497,9 @@ else:
         def __init__(self, config: LayerConfig):
             self.config = config
 
-
     class MemoryAugmentedTransformer:
         def __init__(self, **kwargs):
             pass
-
 
     class MemoryInjector:
         def __init__(self, memory_cache, **kwargs):

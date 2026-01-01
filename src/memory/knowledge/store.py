@@ -29,13 +29,14 @@ import httpx
 
 class KnowledgeType(str, Enum):
     """Types of knowledge entries."""
-    FACT = "fact"           # Verified factual information
-    SKILL = "skill"         # Known capability or expertise
+
+    FACT = "fact"  # Verified factual information
+    SKILL = "skill"  # Known capability or expertise
     PREFERENCE = "preference"  # User preference
     EXPERIENCE = "experience"  # Work/life experience
-    CONTACT = "contact"     # Person/organization
-    PROJECT = "project"     # Project or work item
-    INSIGHT = "insight"     # Derived insight
+    CONTACT = "contact"  # Person/organization
+    PROJECT = "project"  # Project or work item
+    INSIGHT = "insight"  # Derived insight
 
 
 @dataclass
@@ -86,7 +87,7 @@ class OllamaEmbeddings:
                     return response.json()["embedding"]
             except (httpx.ReadTimeout, httpx.ConnectTimeout) as e:
                 if attempt < retries - 1:
-                    await asyncio.sleep(2 ** attempt)  # Exponential backoff
+                    await asyncio.sleep(2**attempt)  # Exponential backoff
                     continue
                 raise e
 
@@ -169,26 +170,29 @@ class KnowledgeStore:
         if not entry.embedding:
             entry.embedding = await self.embeddings.embed(entry.summary)
 
-        self._conn.execute("""
+        self._conn.execute(
+            """
             INSERT OR REPLACE INTO knowledge
             (id, knowledge_type, summary, category, subcategory,
              entities_json, tags_json, embedding, confidence,
              source_count, created_at, last_accessed)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            str(entry.id),
-            entry.knowledge_type.value,
-            entry.summary,
-            entry.category,
-            entry.subcategory,
-            json.dumps(entry.entities),
-            json.dumps(entry.tags),
-            json.dumps(entry.embedding),
-            entry.confidence,
-            entry.source_count,
-            entry.created_at.isoformat(),
-            entry.last_accessed.isoformat(),
-        ))
+        """,
+            (
+                str(entry.id),
+                entry.knowledge_type.value,
+                entry.summary,
+                entry.category,
+                entry.subcategory,
+                json.dumps(entry.entities),
+                json.dumps(entry.tags),
+                json.dumps(entry.embedding),
+                entry.confidence,
+                entry.source_count,
+                entry.created_at.isoformat(),
+                entry.last_accessed.isoformat(),
+            ),
+        )
         self._conn.commit()
         return entry
 
@@ -235,12 +239,15 @@ class KnowledgeStore:
         if not self._conn:
             raise RuntimeError("Store not initialized")
 
-        cursor = self._conn.execute("""
+        cursor = self._conn.execute(
+            """
             SELECT k.* FROM knowledge k
             JOIN knowledge_fts fts ON k.id = fts.id
             WHERE knowledge_fts MATCH ?
             LIMIT ?
-        """, (query, limit))
+        """,
+            (query, limit),
+        )
 
         return [self._row_to_entry(row) for row in cursor.fetchall()]
 

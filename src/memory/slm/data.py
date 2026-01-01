@@ -78,24 +78,28 @@ class MemoryDataset:
         domain_context = ", ".join(memory.domains[:3]) if memory.domains else "general"
 
         # Direct recall
-        examples.append(TrainingExample(
-            instruction=f"What are the user's preferences regarding {domain_context}?",
-            response=memory.content,
-            memory_type="preference",
-            truth_category=memory.truth_category.value,
-            confidence=memory.confidence.overall,
-            domains=memory.domains,
-        ))
+        examples.append(
+            TrainingExample(
+                instruction=f"What are the user's preferences regarding {domain_context}?",
+                response=memory.content,
+                memory_type="preference",
+                truth_category=memory.truth_category.value,
+                confidence=memory.confidence.overall,
+                domains=memory.domains,
+            )
+        )
 
         # Contextual application
-        examples.append(TrainingExample(
-            instruction=f"When working with {domain_context}, what should I keep in mind about the user's preferences?",
-            response=f"The user has expressed: {memory.content}",
-            memory_type="preference",
-            truth_category=memory.truth_category.value,
-            confidence=memory.confidence.overall,
-            domains=memory.domains,
-        ))
+        examples.append(
+            TrainingExample(
+                instruction=f"When working with {domain_context}, what should I keep in mind about the user's preferences?",
+                response=f"The user has expressed: {memory.content}",
+                memory_type="preference",
+                truth_category=memory.truth_category.value,
+                confidence=memory.confidence.overall,
+                domains=memory.domains,
+            )
+        )
 
         return examples
 
@@ -104,14 +108,16 @@ class MemoryDataset:
         examples = []
         domain_context = ", ".join(memory.domains[:3]) if memory.domains else "general"
 
-        examples.append(TrainingExample(
-            instruction=f"What does the user believe about {domain_context}?",
-            response=memory.content,
-            memory_type="belief",
-            truth_category=memory.truth_category.value,
-            confidence=memory.confidence.overall,
-            domains=memory.domains,
-        ))
+        examples.append(
+            TrainingExample(
+                instruction=f"What does the user believe about {domain_context}?",
+                response=memory.content,
+                memory_type="belief",
+                truth_category=memory.truth_category.value,
+                confidence=memory.confidence.overall,
+                domains=memory.domains,
+            )
+        )
 
         return examples
 
@@ -119,25 +125,29 @@ class MemoryDataset:
         """Generate training examples for skills."""
         examples = []
 
-        examples.append(TrainingExample(
-            instruction="What are the user's areas of expertise?",
-            response=memory.content,
-            memory_type="skill",
-            truth_category=memory.truth_category.value,
-            confidence=memory.confidence.overall,
-            domains=memory.domains,
-        ))
+        examples.append(
+            TrainingExample(
+                instruction="What are the user's areas of expertise?",
+                response=memory.content,
+                memory_type="skill",
+                truth_category=memory.truth_category.value,
+                confidence=memory.confidence.overall,
+                domains=memory.domains,
+            )
+        )
 
         if memory.domains:
             for domain in memory.domains[:2]:
-                examples.append(TrainingExample(
-                    instruction=f"What is the user's experience with {domain}?",
-                    response=memory.content,
-                    memory_type="skill",
-                    truth_category=memory.truth_category.value,
-                    confidence=memory.confidence.overall,
-                    domains=memory.domains,
-                ))
+                examples.append(
+                    TrainingExample(
+                        instruction=f"What is the user's experience with {domain}?",
+                        response=memory.content,
+                        memory_type="skill",
+                        truth_category=memory.truth_category.value,
+                        confidence=memory.confidence.overall,
+                        domains=memory.domains,
+                    )
+                )
 
         return examples
 
@@ -147,15 +157,17 @@ class MemoryDataset:
 
         # Only include high-confidence facts
         if memory.confidence.overall >= 0.6:
-            examples.append(TrainingExample(
-                instruction="What relevant facts should be considered?",
-                context=", ".join(memory.domains[:3]) if memory.domains else None,
-                response=memory.content,
-                memory_type="fact",
-                truth_category=memory.truth_category.value,
-                confidence=memory.confidence.overall,
-                domains=memory.domains,
-            ))
+            examples.append(
+                TrainingExample(
+                    instruction="What relevant facts should be considered?",
+                    context=", ".join(memory.domains[:3]) if memory.domains else None,
+                    response=memory.content,
+                    memory_type="fact",
+                    truth_category=memory.truth_category.value,
+                    confidence=memory.confidence.overall,
+                    domains=memory.domains,
+                )
+            )
 
         return examples
 
@@ -163,15 +175,17 @@ class MemoryDataset:
         """Generate general training examples."""
         examples = []
 
-        examples.append(TrainingExample(
-            instruction="What context is relevant here?",
-            context=", ".join(memory.domains[:3]) if memory.domains else None,
-            response=memory.content,
-            memory_type=memory.memory_type.value,
-            truth_category=memory.truth_category.value,
-            confidence=memory.confidence.overall,
-            domains=memory.domains,
-        ))
+        examples.append(
+            TrainingExample(
+                instruction="What context is relevant here?",
+                context=", ".join(memory.domains[:3]) if memory.domains else None,
+                response=memory.content,
+                memory_type=memory.memory_type.value,
+                truth_category=memory.truth_category.value,
+                confidence=memory.confidence.overall,
+                domains=memory.domains,
+            )
+        )
 
         return examples
 
@@ -193,7 +207,7 @@ class MemoryDataset:
                         "truth_category": example.truth_category,
                         "confidence": example.confidence,
                         "domains": example.domains,
-                    }
+                    },
                 }
                 f.write(json.dumps(item) + "\n")
                 count += 1
@@ -212,16 +226,13 @@ class MemoryDataset:
                 messages = [
                     {
                         "role": "system",
-                        "content": "You are a personal AI assistant with deep knowledge of the user's preferences, beliefs, and context."
+                        "content": "You are a personal AI assistant with deep knowledge of the user's preferences, beliefs, and context.",
                     },
                     {
                         "role": "user",
-                        "content": example.instruction + (f"\n\nContext: {example.context}" if example.context else "")
+                        "content": example.instruction + (f"\n\nContext: {example.context}" if example.context else ""),
                     },
-                    {
-                        "role": "assistant",
-                        "content": example.response
-                    }
+                    {"role": "assistant", "content": example.response},
                 ]
 
                 item = {"messages": messages}

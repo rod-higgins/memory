@@ -50,13 +50,17 @@ class SourceRegistry:
 
         # Add built-in sources
         for source_id, info in BUILTIN_SOURCES.items():
-            sources.append({
-                "id": source_id,
-                "name": info.get("name", source_id),
-                "category": info.get("category", DataCategory.OTHER).value if hasattr(info.get("category", DataCategory.OTHER), "value") else str(info.get("category", "other")),
-                "description": info.get("export_format") or info.get("access") or "",
-                "data_types": info.get("data_types", []),
-            })
+            sources.append(
+                {
+                    "id": source_id,
+                    "name": info.get("name", source_id),
+                    "category": info.get("category", DataCategory.OTHER).value
+                    if hasattr(info.get("category", DataCategory.OTHER), "value")
+                    else str(info.get("category", "other")),
+                    "description": info.get("export_format") or info.get("access") or "",
+                    "data_types": info.get("data_types", []),
+                }
+            )
 
         return sources
 
@@ -67,7 +71,7 @@ class SourceRegistry:
         for name, source_class in cls._sources.items():
             # Create temporary instance to check category
             try:
-                if hasattr(source_class, 'category'):
+                if hasattr(source_class, "category"):
                     # Check if it's a property
                     if source_class.category == category:
                         matching.append(name)
@@ -91,11 +95,13 @@ async def get_available_sources() -> list[dict[str, Any]]:
                 metadata = await source.get_metadata()
                 available.append(metadata)
             except Exception as e:
-                available.append({
-                    "name": name,
-                    "error": str(e),
-                    "available": False,
-                })
+                available.append(
+                    {
+                        "name": name,
+                        "error": str(e),
+                        "available": False,
+                    }
+                )
 
     return available
 
@@ -133,7 +139,6 @@ BUILTIN_SOURCES = {
         "export_format": "GDPR data request",
         "data_types": ["posts", "comments", "saved", "upvotes"],
     },
-
     # Communications
     "gmail": {
         "name": "Gmail",
@@ -171,7 +176,6 @@ BUILTIN_SOURCES = {
         "export_format": "GDPR data request",
         "data_types": ["messages", "servers"],
     },
-
     # Documents
     "google_docs": {
         "name": "Google Docs",
@@ -203,7 +207,6 @@ BUILTIN_SOURCES = {
         "export_format": "Export notes (ENEX)",
         "data_types": ["notes", "notebooks", "tags"],
     },
-
     # Media
     "apple_photos": {
         "name": "Apple Photos",
@@ -229,7 +232,6 @@ BUILTIN_SOURCES = {
         "export_format": "Download your data",
         "data_types": ["streaming_history", "playlists", "library"],
     },
-
     # Code & Technical
     "github": {
         "name": "GitHub",
@@ -255,7 +257,6 @@ BUILTIN_SOURCES = {
         "export_format": "GDPR request / API",
         "data_types": ["questions", "answers", "comments", "votes"],
     },
-
     # Professional
     "resume": {
         "name": "Resume/CV",
@@ -263,7 +264,6 @@ BUILTIN_SOURCES = {
         "access": "PDF/DOCX files",
         "data_types": ["experience", "education", "skills"],
     },
-
     # Academic
     "google_scholar": {
         "name": "Google Scholar",
@@ -277,7 +277,6 @@ BUILTIN_SOURCES = {
         "access": "Zotero database",
         "data_types": ["references", "notes", "annotations"],
     },
-
     # Browser
     "chrome_history": {
         "name": "Chrome History",
@@ -291,7 +290,6 @@ BUILTIN_SOURCES = {
         "access": "~/Library/Safari/History.db",
         "data_types": ["browsing_history", "bookmarks"],
     },
-
     # Calendar
     "google_calendar": {
         "name": "Google Calendar",
@@ -305,7 +303,6 @@ BUILTIN_SOURCES = {
         "access": "~/Library/Calendars",
         "data_types": ["events", "reminders"],
     },
-
     # Health & Fitness
     "apple_health": {
         "name": "Apple Health",
@@ -319,7 +316,6 @@ BUILTIN_SOURCES = {
         "export_format": "Download your data",
         "data_types": ["activities", "routes"],
     },
-
     # AI Interactions
     "claude_history": {
         "name": "Claude Code History",
@@ -333,7 +329,6 @@ BUILTIN_SOURCES = {
         "export_format": "Export data",
         "data_types": ["conversations"],
     },
-
     # Financial
     "bank_statements": {
         "name": "Bank Statements",
@@ -341,7 +336,6 @@ BUILTIN_SOURCES = {
         "access": "CSV/PDF exports",
         "data_types": ["transactions", "categories"],
     },
-
     # Location
     "google_maps": {
         "name": "Google Maps Timeline",
@@ -364,7 +358,4 @@ def list_all_sources() -> dict[str, dict[str, Any]]:
 
 def get_sources_by_category(category: DataCategory) -> list[str]:
     """Get all sources for a given category."""
-    return [
-        name for name, info in BUILTIN_SOURCES.items()
-        if info.get("category") == category
-    ]
+    return [name for name, info in BUILTIN_SOURCES.items() if info.get("category") == category]

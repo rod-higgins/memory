@@ -27,10 +27,9 @@ class TrainingConfig:
     lora_r: int = 16  # Rank
     lora_alpha: int = 32  # Scaling
     lora_dropout: float = 0.05
-    target_modules: list[str] = field(default_factory=lambda: [
-        "q_proj", "k_proj", "v_proj", "o_proj",
-        "gate_proj", "up_proj", "down_proj"
-    ])
+    target_modules: list[str] = field(
+        default_factory=lambda: ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
+    )
 
     # Training parameters
     num_epochs: int = 3
@@ -171,9 +170,7 @@ class PersonalSLMTrainer:
         # Tokenize
         def tokenize(example: dict[str, Any]) -> dict[str, Any]:
             messages = example["messages"]
-            text = self._tokenizer.apply_chat_template(
-                messages, tokenize=False, add_generation_prompt=False
-            )
+            text = self._tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=False)
             return self._tokenizer(
                 text,
                 truncation=True,
@@ -202,9 +199,7 @@ class PersonalSLMTrainer:
             model=self._model,
             args=training_args,
             train_dataset=tokenized,
-            data_collator=DataCollatorForLanguageModeling(
-                tokenizer=self._tokenizer, mlm=False
-            ),
+            data_collator=DataCollatorForLanguageModeling(tokenizer=self._tokenizer, mlm=False),
         )
 
         # Train

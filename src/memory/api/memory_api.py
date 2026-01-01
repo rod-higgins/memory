@@ -90,7 +90,7 @@ class MemoryAPI:
             try:
                 ollama_slm = get_slm_provider(provider="ollama", model="tinyllama")
                 # Check if Ollama is running
-                if hasattr(ollama_slm, 'is_available'):
+                if hasattr(ollama_slm, "is_available"):
                     is_avail = await ollama_slm.is_available()
                     if is_avail:
                         slm = ollama_slm
@@ -441,9 +441,6 @@ Based on the user's professional background and digital history:
         """Get formatted statistics for the web UI."""
         if not self._storage:
             raise RuntimeError("API not initialized")
-
-        raw_stats = await self._storage.get_stats()
-        counts = raw_stats.get("counts", {})
 
         # Get all memories for detailed stats
         all_memories: list[MemoryEntry] = []

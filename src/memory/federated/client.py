@@ -85,12 +85,15 @@ class LocalUpdate:
 
     def compute_checksum(self) -> str:
         """Compute checksum for integrity verification."""
-        data = json.dumps({
-            "client_id": self.client_id,
-            "round_id": self.round_id,
-            "samples_used": self.samples_used,
-            "weights_keys": list(self.weights_delta.keys()),
-        }, sort_keys=True)
+        data = json.dumps(
+            {
+                "client_id": self.client_id,
+                "round_id": self.round_id,
+                "samples_used": self.samples_used,
+                "weights_keys": list(self.weights_delta.keys()),
+            },
+            sort_keys=True,
+        )
         return hashlib.sha256(data.encode()).hexdigest()[:16]
 
     def to_dict(self) -> dict[str, Any]:
@@ -101,10 +104,7 @@ class LocalUpdate:
             "round_id": self.round_id,
             "timestamp": self.timestamp.isoformat(),
             "weights_delta": self.weights_delta,
-            "memory_statistics": (
-                self.memory_statistics.to_dict()
-                if self.memory_statistics else None
-            ),
+            "memory_statistics": (self.memory_statistics.to_dict() if self.memory_statistics else None),
             "samples_used": self.samples_used,
             "training_loss": self.training_loss,
             "local_epochs": self.local_epochs,
@@ -122,8 +122,7 @@ class LocalUpdate:
             timestamp=datetime.fromisoformat(data["timestamp"]) if "timestamp" in data else datetime.now(),
             weights_delta=data.get("weights_delta", {}),
             memory_statistics=(
-                PrivateMemoryUpdate.from_dict(data["memory_statistics"])
-                if data.get("memory_statistics") else None
+                PrivateMemoryUpdate.from_dict(data["memory_statistics"]) if data.get("memory_statistics") else None
             ),
             samples_used=data.get("samples_used", 0),
             training_loss=data.get("training_loss", 0.0),
@@ -257,10 +256,7 @@ class FederatedClient:
 
         if self.memory_store is None:
             # Return mock data for testing
-            return [
-                {"content": "Test memory", "embedding": [0.1] * 384}
-                for _ in range(100)
-            ]
+            return [{"content": "Test memory", "embedding": [0.1] * 384} for _ in range(100)]
 
         # Query recent memories from store
         try:
@@ -295,9 +291,7 @@ class FederatedClient:
         if self.current_model:
             for layer_name, weights in self.current_model.items():
                 # Compute gradient based on memories
-                gradient = await self._compute_gradient(
-                    layer_name, weights, memories
-                )
+                gradient = await self._compute_gradient(layer_name, weights, memories)
                 weight_deltas[layer_name] = gradient
 
         # Estimate loss
@@ -334,9 +328,7 @@ class FederatedClient:
 
         # Private average confidence
         confidences = [m.get("confidence", 0.5) for m in memories]
-        private_avg_conf = self.privacy.privatize_mean(
-            confidences, bounds=(0.0, 1.0)
-        )
+        private_avg_conf = self.privacy.privatize_mean(confidences, bounds=(0.0, 1.0))
 
         # Private topic counts
         topic_counts: dict[str, int] = {}
@@ -344,10 +336,7 @@ class FederatedClient:
             for topic in memory.get("topics", []):
                 topic_counts[topic] = topic_counts.get(topic, 0) + 1
 
-        private_topics = {
-            topic: self.privacy.privatize_count(count)
-            for topic, count in topic_counts.items()
-        }
+        private_topics = {topic: self.privacy.privatize_count(count) for topic, count in topic_counts.items()}
 
         return PrivateMemoryUpdate(
             memory_count=private_count,
