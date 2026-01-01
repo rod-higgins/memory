@@ -127,7 +127,7 @@ jobs:
           pytest tests/ -v --cov=memory --cov-report=xml --cov-report=term-missing --timeout=60 -m "not slow and not integration and not requires_torch and not requires_embeddings"
 
       - name: Upload coverage reports
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           file: ./coverage.xml
           fail_ci_if_error: false
