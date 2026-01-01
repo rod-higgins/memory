@@ -148,18 +148,10 @@ def sample_embeddings():
 # Skip markers for optional dependencies
 def pytest_configure(config):
     """Configure custom markers."""
-    config.addinivalue_line(
-        "markers", "slow: marks tests as slow (deselect with '-m \"not slow\"')"
-    )
-    config.addinivalue_line(
-        "markers", "integration: marks tests as integration tests"
-    )
-    config.addinivalue_line(
-        "markers", "requires_torch: marks tests that require PyTorch"
-    )
-    config.addinivalue_line(
-        "markers", "requires_embeddings: marks tests that require sentence-transformers"
-    )
+    config.addinivalue_line("markers", "slow: marks tests as slow (deselect with '-m \"not slow\"')")
+    config.addinivalue_line("markers", "integration: marks tests as integration tests")
+    config.addinivalue_line("markers", "requires_torch: marks tests that require PyTorch")
+    config.addinivalue_line("markers", "requires_embeddings: marks tests that require sentence-transformers")
 
 
 # Skip conditions

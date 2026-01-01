@@ -118,14 +118,10 @@ class IdentityProfile(BaseModel):
             email=data.get("email", {}).get("gmail", [{}])[0].get("address", ""),
             emails=[e.get("address", "") for e in data.get("email", {}).get("gmail", [])],
             github_handles=[a.get("username", "") for a in data.get("code", {}).get("github", {}).get("accounts", [])],
-            social_handles={
-                k: v.get("handle", v.get("username", ""))
-                for k, v in data.get("social_media", {}).items()
-            },
+            social_handles={k: v.get("handle", v.get("username", "")) for k, v in data.get("social_media", {}).items()},
             cloud_services=data.get("cloud_services", {}),
             local_data_paths={
-                p.get("name", ""): p.get("path", "")
-                for p in data.get("local_documents", {}).get("paths", [])
+                p.get("name", ""): p.get("path", "") for p in data.get("local_documents", {}).get("paths", [])
             },
             roles=[data.get("work", {}).get("role", "")] if data.get("work", {}).get("role") else [],
             organizations=[

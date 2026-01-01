@@ -77,9 +77,7 @@ class SentenceTransformerProvider(EmbeddingProvider):
         try:
             from sentence_transformers import SentenceTransformer
         except ImportError:
-            raise ImportError(
-                "sentence-transformers is required. Install with: pip install sentence-transformers"
-            )
+            raise ImportError("sentence-transformers is required. Install with: pip install sentence-transformers")
 
         # Load model with optional cache directory
         kwargs: dict[str, Any] = {}
@@ -202,9 +200,7 @@ def get_embedding_provider(
         try:
             import sentence_transformers  # noqa: F401
         except ImportError:
-            raise ImportError(
-                "sentence-transformers is required. Install with: pip install sentence-transformers"
-            )
+            raise ImportError("sentence-transformers is required. Install with: pip install sentence-transformers")
         return SentenceTransformerProvider(model_name=model, **kwargs)
     elif provider == "ollama":
         return OllamaEmbeddingProvider(model_name=model, **kwargs)

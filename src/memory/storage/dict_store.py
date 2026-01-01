@@ -249,9 +249,7 @@ class DictStore(BaseStore):
             await asyncio.sleep(3600)  # Check every hour
 
             cutoff = datetime.now() - timedelta(hours=self._ttl_hours)
-            expired = [
-                mid for mid, m in self._memories.items() if m.created_at < cutoff and m.is_active
-            ]
+            expired = [mid for mid, m in self._memories.items() if m.created_at < cutoff and m.is_active]
 
             for mid in expired:
                 await self.delete(mid)

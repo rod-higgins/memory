@@ -91,9 +91,7 @@ class ChromeHistorySource(DataSource):
             conn.row_factory = sqlite3.Row
 
             # Check if tables exist
-            tables = conn.execute(
-                "SELECT name FROM sqlite_master WHERE type='table' AND name='urls'"
-            ).fetchone()
+            tables = conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='urls'").fetchone()
             if not tables:
                 conn.close()
                 return
@@ -121,9 +119,7 @@ class ChromeHistorySource(DataSource):
                 if row["visit_time"]:
                     # Chrome epoch is 1601-01-01
                     chrome_epoch = datetime(1601, 1, 1)
-                    delta = __import__("datetime").timedelta(
-                        microseconds=row["visit_time"]
-                    )
+                    delta = __import__("datetime").timedelta(microseconds=row["visit_time"])
                     timestamp = chrome_epoch + delta
 
                 yield DataPoint(
@@ -149,6 +145,7 @@ class ChromeHistorySource(DataSource):
         """Extract domain from URL."""
         try:
             from urllib.parse import urlparse
+
             parsed = urlparse(url)
             return parsed.netloc
         except Exception:
@@ -213,9 +210,7 @@ class SafariHistorySource(DataSource):
                 timestamp = None
                 if row["visit_time"]:
                     safari_epoch = datetime(2001, 1, 1)
-                    delta = __import__("datetime").timedelta(
-                        seconds=row["visit_time"]
-                    )
+                    delta = __import__("datetime").timedelta(seconds=row["visit_time"])
                     timestamp = safari_epoch + delta
 
                 yield DataPoint(
@@ -240,6 +235,7 @@ class SafariHistorySource(DataSource):
         """Extract domain from URL."""
         try:
             from urllib.parse import urlparse
+
             parsed = urlparse(url)
             return parsed.netloc
         except Exception:
@@ -348,6 +344,7 @@ class FirefoxHistorySource(DataSource):
         """Extract domain from URL."""
         try:
             from urllib.parse import urlparse
+
             parsed = urlparse(url)
             return parsed.netloc
         except Exception:
@@ -386,9 +383,7 @@ class ChromeBookmarksSource(DataSource):
         async for dp in self._iterate_folder(data.get("roots", {}), []):
             yield dp
 
-    async def _iterate_folder(
-        self, node: dict, path: list[str]
-    ) -> AsyncIterator[DataPoint]:
+    async def _iterate_folder(self, node: dict, path: list[str]) -> AsyncIterator[DataPoint]:
         """Recursively iterate over bookmark folders."""
         for key, value in node.items():
             if isinstance(value, dict):
@@ -403,9 +398,7 @@ class ChromeBookmarksSource(DataSource):
                         try:
                             # Chrome timestamp
                             chrome_epoch = datetime(1601, 1, 1)
-                            delta = __import__("datetime").timedelta(
-                                microseconds=int(date_added)
-                            )
+                            delta = __import__("datetime").timedelta(microseconds=int(date_added))
                             timestamp = chrome_epoch + delta
                         except (ValueError, OSError):
                             pass
@@ -430,9 +423,7 @@ class ChromeBookmarksSource(DataSource):
                     new_path = path + [folder_name]
 
                     for child in children:
-                        async for dp in self._iterate_folder(
-                            {child.get("name", ""): child}, new_path
-                        ):
+                        async for dp in self._iterate_folder({child.get("name", ""): child}, new_path):
                             yield dp
 
 
@@ -463,6 +454,7 @@ class SafariBookmarksSource(DataSource):
 
         try:
             import plistlib
+
             with open(self.plist_path, "rb") as f:
                 data = plistlib.load(f)
         except Exception:
@@ -471,9 +463,7 @@ class SafariBookmarksSource(DataSource):
         async for dp in self._iterate_folder(data, []):
             yield dp
 
-    async def _iterate_folder(
-        self, node: dict, path: list[str]
-    ) -> AsyncIterator[DataPoint]:
+    async def _iterate_folder(self, node: dict, path: list[str]) -> AsyncIterator[DataPoint]:
         """Recursively iterate over bookmark folders."""
         children = node.get("Children", [])
 

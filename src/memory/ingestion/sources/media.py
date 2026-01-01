@@ -51,6 +51,7 @@ class ApplePhotosSource(FileBasedSource):
         if db_path.exists():
             try:
                 import sqlite3
+
                 conn = sqlite3.connect(str(db_path))
                 cursor = conn.execute("SELECT COUNT(*) FROM ZASSET")
                 count = cursor.fetchone()[0]
@@ -71,6 +72,7 @@ class ApplePhotosSource(FileBasedSource):
 
         try:
             import sqlite3
+
             conn = sqlite3.connect(str(db_path))
 
             # Query photos with metadata
@@ -126,6 +128,7 @@ class ApplePhotosSource(FileBasedSource):
         """Convert Cocoa timestamp to datetime."""
         # Cocoa epoch is 2001-01-01
         import datetime as dt
+
         cocoa_epoch = dt.datetime(2001, 1, 1)
         return cocoa_epoch + dt.timedelta(seconds=cocoa_timestamp)
 

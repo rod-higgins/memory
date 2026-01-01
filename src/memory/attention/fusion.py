@@ -34,6 +34,7 @@ try:
     import torch
     import torch.nn as nn
     import torch.nn.functional as F
+
     HAS_TORCH = True
 except ImportError:
     HAS_TORCH = False
@@ -94,7 +95,6 @@ if HAS_TORCH:
             """Fuse context and memory attention outputs."""
             pass
 
-
     class ConcatFusion(AttentionFusion):
         """
         Concatenation fusion: concat attention outputs and project.
@@ -134,7 +134,6 @@ if HAS_TORCH:
 
             # Reshape back
             return output.view(batch, seq, heads, d).transpose(1, 2)
-
 
     class GatedFusion(AttentionFusion):
         """
@@ -200,7 +199,6 @@ if HAS_TORCH:
 
             return output.view(batch, seq, heads, d).transpose(1, 2)
 
-
     class CrossAttentionFusion(AttentionFusion):
         """
         Cross-attention fusion: context attends to memory output.
@@ -258,7 +256,6 @@ if HAS_TORCH:
 
             return output.view(batch, seq, heads, d).transpose(1, 2)
 
-
     class HierarchicalFusion(AttentionFusion):
         """
         Hierarchical fusion: attend to summaries, then details.
@@ -312,7 +309,6 @@ if HAS_TORCH:
 
             return output.view(batch, seq, heads, d).transpose(1, 2)
 
-
     class MixtureOfExpertsFusion(AttentionFusion):
         """
         Mixture of Experts fusion: route queries to specialized experts.
@@ -338,14 +334,16 @@ if HAS_TORCH:
             self.router = nn.Linear(d_total * 2, num_experts)
 
             # Experts (each is a simple fusion function)
-            self.experts = nn.ModuleList([
-                nn.Sequential(
-                    nn.Linear(d_total * 2, d_total),
-                    nn.ReLU(),
-                    nn.Linear(d_total, d_total),
-                )
-                for _ in range(num_experts)
-            ])
+            self.experts = nn.ModuleList(
+                [
+                    nn.Sequential(
+                        nn.Linear(d_total * 2, d_total),
+                        nn.ReLU(),
+                        nn.Linear(d_total, d_total),
+                    )
+                    for _ in range(num_experts)
+                ]
+            )
 
             # Expert biases for specialization
             self.expert_biases = nn.Parameter(torch.randn(num_experts, 2))
@@ -379,7 +377,7 @@ if HAS_TORCH:
                 biased_input = bias[0] * ctx_flat + bias[1] * mem_flat
 
                 # Expert forward
-                exp_combined = torch.cat([biased_input, combined[:, :, combined.shape[-1]//2:]], dim=-1)
+                exp_combined = torch.cat([biased_input, combined[:, :, combined.shape[-1] // 2 :]], dim=-1)
                 expert_out = expert(exp_combined)
                 expert_outputs.append(expert_out)
 
@@ -389,7 +387,6 @@ if HAS_TORCH:
             output = self.dropout(output)
 
             return output.view(batch, seq, heads, d).transpose(1, 2)
-
 
     class AdaptiveFusion(AttentionFusion):
         """
@@ -449,14 +446,13 @@ if HAS_TORCH:
 
             # Weighted combination of strategies
             output = (
-                strategy_probs[..., 0:1] * pure_ctx +
-                strategy_probs[..., 1:2] * pure_mem +
-                strategy_probs[..., 2:3] * blended
+                strategy_probs[..., 0:1] * pure_ctx
+                + strategy_probs[..., 1:2] * pure_mem
+                + strategy_probs[..., 2:3] * blended
             )
             output = self.dropout(output)
 
             return output.view(batch, seq, heads, d).transpose(1, 2)
-
 
     def create_fusion(strategy: FusionStrategy, config: FusionConfig) -> AttentionFusion:
         """Create a fusion module for the given strategy."""
@@ -485,30 +481,23 @@ else:
         def forward(self, context_attn, memory_attn, **kwargs):
             return context_attn + memory_attn
 
-
     class ConcatFusion(AttentionFusion):
         pass
-
 
     class GatedFusion(AttentionFusion):
         pass
 
-
     class CrossAttentionFusion(AttentionFusion):
         pass
-
 
     class HierarchicalFusion(AttentionFusion):
         pass
 
-
     class MixtureOfExpertsFusion(AttentionFusion):
         pass
 
-
     class AdaptiveFusion(AttentionFusion):
         pass
-
 
     def create_fusion(strategy: FusionStrategy, config: FusionConfig) -> AttentionFusion:
         return AttentionFusion(config)

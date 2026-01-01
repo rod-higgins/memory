@@ -41,9 +41,7 @@ class StorageManager:
             db_path=self._base_path / "long_term" / "lancedb",
             embedding_dim=embedding_dim,
         )
-        self._persistent = SQLiteStore(
-            db_path=self._base_path / "persistent" / "core.sqlite"
-        )
+        self._persistent = SQLiteStore(db_path=self._base_path / "persistent" / "core.sqlite")
 
         self._stores: dict[MemoryTier, BaseStore] = {
             MemoryTier.SHORT_TERM: self._short_term,

@@ -177,10 +177,7 @@ class FederatedServer:
     ) -> list[ClientInfo]:
         """Get clients seen recently."""
         cutoff = datetime.now() - timedelta(minutes=since_minutes)
-        return [
-            c for c in self.clients.values()
-            if c.last_seen >= cutoff
-        ]
+        return [c for c in self.clients.values() if c.last_seen >= cutoff]
 
     async def start_round(self) -> FederationRound | None:
         """Start a new federation round."""
@@ -201,9 +198,7 @@ class FederatedServer:
             round_number=self.round_counter,
             state=RoundState.ACTIVE,
             started_at=datetime.now(),
-            deadline=datetime.now() + timedelta(
-                seconds=self.config.round_duration_seconds
-            ),
+            deadline=datetime.now() + timedelta(seconds=self.config.round_duration_seconds),
             selected_clients=[c.client_id for c in selected],
         )
 
@@ -298,9 +293,7 @@ class FederatedServer:
         self.current_round.state = RoundState.AGGREGATING
 
         # Aggregate updates
-        aggregated = await self._aggregate_updates(
-            self.current_round.received_updates
-        )
+        aggregated = await self._aggregate_updates(self.current_round.received_updates)
 
         self.current_round.aggregated_model = aggregated["model"]
         self.current_round.aggregated_statistics = aggregated["statistics"]
@@ -452,9 +445,7 @@ class FederatedServer:
                 if values_at_i:
                     mid = len(values_at_i) // 2
                     if len(values_at_i) % 2 == 0:
-                        median_values.append(
-                            (values_at_i[mid - 1] + values_at_i[mid]) / 2
-                        )
+                        median_values.append((values_at_i[mid - 1] + values_at_i[mid]) / 2)
                     else:
                         median_values.append(values_at_i[mid])
 
@@ -519,10 +510,7 @@ class FederatedServer:
         updates: list[LocalUpdate],
     ) -> PrivateMemoryUpdate | None:
         """Aggregate private statistics from updates."""
-        stats_updates = [
-            u.memory_statistics for u in updates
-            if u.memory_statistics
-        ]
+        stats_updates = [u.memory_statistics for u in updates if u.memory_statistics]
 
         if not stats_updates:
             return None
@@ -563,10 +551,7 @@ class FederatedServer:
                 # Apply delta to existing weights
                 current = current_model[layer]
                 delta = update[layer]
-                new_model[layer] = [
-                    c + learning_rate * d
-                    for c, d in zip(current, delta)
-                ]
+                new_model[layer] = [c + learning_rate * d for c, d in zip(current, delta)]
             elif layer in current_model:
                 new_model[layer] = current_model[layer]
             else:
@@ -588,10 +573,7 @@ class FederatedServer:
             "active_clients": len(self.get_active_clients()),
             "total_rounds_completed": self.total_rounds_completed,
             "total_updates_received": self.total_updates_received,
-            "current_round": (
-                self.current_round.to_dict()
-                if self.current_round else None
-            ),
+            "current_round": (self.current_round.to_dict() if self.current_round else None),
             "aggregation_strategy": self.config.aggregation_strategy.value,
         }
 

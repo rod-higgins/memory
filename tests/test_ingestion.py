@@ -18,8 +18,8 @@ class TestBaseAdapter:
         from memory.ingestion.sources import LocalGitSource
 
         adapter = LocalGitSource()
-        assert hasattr(adapter, 'ingest')
-        assert hasattr(adapter, 'source_type')
+        assert hasattr(adapter, "ingest")
+        assert hasattr(adapter, "source_type")
 
 
 class TestLocalGitSource:
@@ -172,7 +172,7 @@ class TestLocalDocumentsSource:
         from memory.ingestion.sources import LocalDocumentsSource
 
         adapter = LocalDocumentsSource()
-        assert hasattr(adapter, 'extensions') or hasattr(adapter, 'supported_extensions')
+        assert hasattr(adapter, "extensions") or hasattr(adapter, "supported_extensions")
 
 
 class TestBrowserHistorySource:
@@ -339,11 +339,15 @@ class TestParsers:
         from memory.ingestion.parsers import JsonParser
 
         test_file = temp_dir / "test.json"
-        test_file.write_text(json.dumps({
-            "name": "Test",
-            "value": 123,
-            "nested": {"key": "value"},
-        }))
+        test_file.write_text(
+            json.dumps(
+                {
+                    "name": "Test",
+                    "value": 123,
+                    "nested": {"key": "value"},
+                }
+            )
+        )
 
         parser = JsonParser()
         content = await parser.parse(test_file)

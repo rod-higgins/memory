@@ -405,7 +405,9 @@ class ContentIngestionPipeline:
             "localhost",
             "127.0.0.1",
             ".pdf",  # Handle separately
-            ".jpg", ".png", ".gif",  # Images
+            ".jpg",
+            ".png",
+            ".gif",  # Images
         ]
 
         url_lower = url.lower()

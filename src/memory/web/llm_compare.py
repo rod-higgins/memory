@@ -376,9 +376,7 @@ class CopilotProvider(LLMProvider):
                 error=f"Copilot error: {str(e)}",
             )
 
-    async def _query_via_github_models(
-        self, message: str, context: str | None, start: float
-    ) -> LLMResponse:
+    async def _query_via_github_models(self, message: str, context: str | None, start: float) -> LLMResponse:
         """Fallback to GitHub Models API."""
         import time
 
@@ -483,7 +481,8 @@ class AmazonQProvider(LLMProvider):
         if self._client is None:
             try:
                 import boto3
-                self._client = boto3.client('bedrock-runtime', region_name='us-east-1')
+
+                self._client = boto3.client("bedrock-runtime", region_name="us-east-1")
             except Exception:
                 pass
         return self._client
@@ -492,7 +491,8 @@ class AmazonQProvider(LLMProvider):
         if self._available is None:
             try:
                 import boto3
-                sts = boto3.client('sts')
+
+                sts = boto3.client("sts")
                 sts.get_caller_identity()
                 self._available = True
             except Exception:
@@ -542,19 +542,21 @@ class AmazonQProvider(LLMProvider):
             # Use Amazon Titan Text Express
             response = client.invoke_model(
                 modelId=self.model,
-                contentType='application/json',
-                accept='application/json',
-                body=json.dumps({
-                    "inputText": full_prompt,
-                    "textGenerationConfig": {
-                        "maxTokenCount": 2048,
-                        "temperature": 0.7,
+                contentType="application/json",
+                accept="application/json",
+                body=json.dumps(
+                    {
+                        "inputText": full_prompt,
+                        "textGenerationConfig": {
+                            "maxTokenCount": 2048,
+                            "temperature": 0.7,
+                        },
                     }
-                })
+                ),
             )
 
             latency = (time.time() - start) * 1000
-            result = json.loads(response['body'].read())
+            result = json.loads(response["body"].read())
             output_text = result.get("results", [{}])[0].get("outputText", "")
 
             return LLMResponse(
@@ -576,9 +578,7 @@ class AmazonQProvider(LLMProvider):
                 error=f"Bedrock error: {str(e)[:200]}",
             )
 
-    async def _query_via_q_cli(
-        self, message: str, context: str | None, start: float
-    ) -> LLMResponse:
+    async def _query_via_q_cli(self, message: str, context: str | None, start: float) -> LLMResponse:
         """Fallback to Amazon Q Developer CLI if available."""
         import time
 
@@ -677,7 +677,6 @@ class LLMCompare:
         system_prompt: str | None = None,
     ) -> LLMResponse:
         """Query a single provider (LLM or SLM)."""
-        import time
 
         # Handle Ollama/SLM providers
         if provider_id.startswith("ollama_") or provider_id.startswith("slm_"):
@@ -705,8 +704,9 @@ class LLMCompare:
         system_prompt: str | None = None,
     ) -> LLMResponse:
         """Query an Ollama/SLM model."""
-        import httpx
         import time
+
+        import httpx
 
         # Extract model name from provider ID
         if provider_id.startswith("ollama_"):
@@ -715,6 +715,7 @@ class LLMCompare:
             # SLM from config - need to load config
             import json
             from pathlib import Path
+
             config_path = Path.home() / "memory" / "data" / "persistent" / "models.json"
             if config_path.exists():
                 config = json.loads(config_path.read_text())
@@ -820,10 +821,7 @@ class LLMCompare:
         """Query all (or specified) providers in parallel."""
         provider_ids = providers or list(self.providers.keys())
 
-        tasks = [
-            self.query_single(pid, message, context, system_prompt)
-            for pid in provider_ids
-        ]
+        tasks = [self.query_single(pid, message, context, system_prompt) for pid in provider_ids]
 
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
@@ -857,18 +855,12 @@ class LLMCompare:
         each containing responses from all providers.
         """
         # Query with context
-        with_context_task = self.query_all(
-            message, context, system_prompt, providers
-        )
+        with_context_task = self.query_all(message, context, system_prompt, providers)
 
         # Query without context
-        without_context_task = self.query_all(
-            message, None, system_prompt, providers
-        )
+        without_context_task = self.query_all(message, None, system_prompt, providers)
 
-        with_context, without_context = await asyncio.gather(
-            with_context_task, without_context_task
-        )
+        with_context, without_context = await asyncio.gather(with_context_task, without_context_task)
 
         return {
             "with_context": with_context,

@@ -180,43 +180,41 @@ class ContinuousLearner:
     def _format_for_distillation(self, event: LearningEvent) -> str:
         """Format an interaction for knowledge distillation."""
         # Create training example format
-        return json.dumps({
-            "messages": [
-                {
-                    "role": "system",
-                    "content": "You are a personal AI assistant with deep knowledge of the user."
+        return json.dumps(
+            {
+                "messages": [
+                    {"role": "system", "content": "You are a personal AI assistant with deep knowledge of the user."},
+                    {"role": "user", "content": event.user_query},
+                    {"role": "assistant", "content": event.assistant_response},
+                ],
+                "metadata": {
+                    "teacher": event.teacher_model,
+                    "domains": event.domains_activated,
+                    "feedback": event.user_feedback,
                 },
-                {
-                    "role": "user",
-                    "content": event.user_query
-                },
-                {
-                    "role": "assistant",
-                    "content": event.assistant_response
-                }
-            ],
-            "metadata": {
-                "teacher": event.teacher_model,
-                "domains": event.domains_activated,
-                "feedback": event.user_feedback,
             }
-        })
+        )
 
     def _log_event(self, event: LearningEvent) -> None:
         """Append event to the learning log."""
         with open(self._log_path, "a") as f:
-            f.write(json.dumps({
-                "id": event.id,
-                "timestamp": event.timestamp,
-                "user_query": event.user_query,
-                "assistant_response": event.assistant_response[:500],  # Truncate for log
-                "teacher_model": event.teacher_model,
-                "learned_facts": event.learned_facts,
-                "learned_preferences": event.learned_preferences,
-                "domains_activated": event.domains_activated,
-                "user_feedback": event.user_feedback,
-                "has_correction": event.correction is not None,
-            }) + "\n")
+            f.write(
+                json.dumps(
+                    {
+                        "id": event.id,
+                        "timestamp": event.timestamp,
+                        "user_query": event.user_query,
+                        "assistant_response": event.assistant_response[:500],  # Truncate for log
+                        "teacher_model": event.teacher_model,
+                        "learned_facts": event.learned_facts,
+                        "learned_preferences": event.learned_preferences,
+                        "domains_activated": event.domains_activated,
+                        "user_feedback": event.user_feedback,
+                        "has_correction": event.correction is not None,
+                    }
+                )
+                + "\n"
+            )
 
     def _should_update(self) -> bool:
         """Determine if we should trigger a model update."""
@@ -332,10 +330,7 @@ class ContinuousLearner:
             return {"status": "skipped", "reason": "no_activation_data"}
 
         # Find domains to potentially prune
-        domain_ratios = {
-            domain: count / total_activations
-            for domain, count in self._domain_activations.items()
-        }
+        domain_ratios = {domain: count / total_activations for domain, count in self._domain_activations.items()}
 
         active_domains = [d for d, r in domain_ratios.items() if r >= 0.01]
         inactive_domains = [d for d, r in domain_ratios.items() if r < 0.01]
@@ -353,18 +348,12 @@ class ContinuousLearner:
         # Corrections are important - create a high-priority training example
         correction_data = {
             "messages": [
-                {
-                    "role": "system",
-                    "content": "You are a personal AI assistant. Learn from this correction."
-                },
-                {
-                    "role": "user",
-                    "content": event.user_query
-                },
+                {"role": "system", "content": "You are a personal AI assistant. Learn from this correction."},
+                {"role": "user", "content": event.user_query},
                 {
                     "role": "assistant",
-                    "content": event.correction  # Use the corrected response
-                }
+                    "content": event.correction,  # Use the corrected response
+                },
             ],
             "weight": 3.0,  # High weight for corrections
             "is_correction": True,
@@ -381,11 +370,7 @@ class ContinuousLearner:
             "pending_events": len(self._pending_events),
             "update_count": self._update_count,
             "last_update": self._last_update.isoformat() if self._last_update else None,
-            "domain_activations": dict(sorted(
-                self._domain_activations.items(),
-                key=lambda x: x[1],
-                reverse=True
-            )[:10]),
+            "domain_activations": dict(sorted(self._domain_activations.items(), key=lambda x: x[1], reverse=True)[:10]),
             "log_path": str(self._log_path),
         }
 

@@ -1,6 +1,5 @@
 """Tests for multimodal processing module."""
 
-
 import pytest
 
 
@@ -85,7 +84,7 @@ class TestImageProcessor:
         try:
             from PIL import Image
 
-            img = Image.new('RGB', (100, 100), color='red')
+            img = Image.new("RGB", (100, 100), color="red")
             img_path = temp_dir / "test.jpg"
             img.save(str(img_path))
 

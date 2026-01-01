@@ -159,17 +159,11 @@ class ModelCompressor:
 
         if compressed.method == CompressionMethod.QUANTIZE:
             # Dequantize
-            return [
-                (q - compressed.zero_point) * compressed.scale
-                for q in compressed.quantized_values
-            ]
+            return [(q - compressed.zero_point) * compressed.scale for q in compressed.quantized_values]
 
         if compressed.method == CompressionMethod.COMBINED:
             # First dequantize
-            dequantized = [
-                (q - compressed.zero_point) * compressed.scale
-                for q in compressed.quantized_values
-            ]
+            dequantized = [(q - compressed.zero_point) * compressed.scale for q in compressed.quantized_values]
             # Then expand sparse
             result = [0.0] * compressed.original_length
             for idx, val in zip(compressed.indices, dequantized):
@@ -220,9 +214,7 @@ class ModelCompressor:
             compressed_full = [0.0] * len(values)
             for idx, val in zip(indices, kept_values):
                 compressed_full[idx] = val
-            self.error_buffer[layer_name] = [
-                v - c for v, c in zip(values, compressed_full)
-            ]
+            self.error_buffer[layer_name] = [v - c for v, c in zip(values, compressed_full)]
 
         return CompressedUpdate(
             layer_name=layer_name,
@@ -382,20 +374,14 @@ class ModelCompressor:
         model: dict[str, list[float]],
     ) -> dict[str, CompressedUpdate]:
         """Compress all layers of a model."""
-        return {
-            layer: self.compress(layer, values)
-            for layer, values in model.items()
-        }
+        return {layer: self.compress(layer, values) for layer, values in model.items()}
 
     def decompress_model(
         self,
         compressed_model: dict[str, CompressedUpdate],
     ) -> dict[str, list[float]]:
         """Decompress all layers of a model."""
-        return {
-            layer: self.decompress(update)
-            for layer, update in compressed_model.items()
-        }
+        return {layer: self.decompress(update) for layer, update in compressed_model.items()}
 
     def get_stats(self) -> dict[str, Any]:
         """Get compression statistics."""

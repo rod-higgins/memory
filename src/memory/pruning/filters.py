@@ -71,7 +71,7 @@ class SpamFilter(ContentFilter):
             reason=f"Spam patterns detected: {matches}",
             confidence=score,
             filter_name=self.name,
-            metadata={"pattern_matches": matches}
+            metadata={"pattern_matches": matches},
         )
 
 
@@ -126,7 +126,7 @@ class PromotionalFilter(ContentFilter):
             reason=f"Promotional patterns detected: {matches}",
             confidence=score,
             filter_name=self.name,
-            metadata={"pattern_matches": matches}
+            metadata={"pattern_matches": matches},
         )
 
 
@@ -165,7 +165,7 @@ class NewsletterFilter(ContentFilter):
             reason=f"Newsletter patterns detected: {matches}",
             confidence=score,
             filter_name=self.name,
-            metadata={"pattern_matches": matches}
+            metadata={"pattern_matches": matches},
         )
 
 
@@ -212,7 +212,7 @@ class NotificationFilter(ContentFilter):
             reason=f"Notification patterns detected: {matches}",
             confidence=score,
             filter_name=self.name,
-            metadata={"pattern_matches": matches}
+            metadata={"pattern_matches": matches},
         )
 
 
@@ -251,7 +251,7 @@ class SocialMediaFilter(ContentFilter):
             reason=f"Social media notification patterns: {matches}",
             confidence=score,
             filter_name=self.name,
-            metadata={"pattern_matches": matches}
+            metadata={"pattern_matches": matches},
         )
 
 
@@ -266,7 +266,7 @@ class LowValueFilter(ContentFilter):
 
     def evaluate(self, content: str, metadata: dict[str, Any] | None = None) -> FilterResult:
         # Remove common email headers
-        body = re.sub(r'^(Subject|From|To|Date|Cc|Bcc):.*$', '', content, flags=re.MULTILINE)
+        body = re.sub(r"^(Subject|From|To|Date|Cc|Bcc):.*$", "", content, flags=re.MULTILINE)
         body = body.strip()
 
         content_length = len(body)
@@ -278,7 +278,7 @@ class LowValueFilter(ContentFilter):
                 reason=f"Low content value: {word_count} words, {content_length} chars",
                 confidence=0.8,
                 filter_name=self.name,
-                metadata={"word_count": word_count, "content_length": content_length}
+                metadata={"word_count": word_count, "content_length": content_length},
             )
 
         return FilterResult(
@@ -286,5 +286,5 @@ class LowValueFilter(ContentFilter):
             reason="Sufficient content",
             confidence=0.0,
             filter_name=self.name,
-            metadata={"word_count": word_count, "content_length": content_length}
+            metadata={"word_count": word_count, "content_length": content_length},
         )

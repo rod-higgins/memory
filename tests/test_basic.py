@@ -6,12 +6,14 @@ import pytest
 def test_import_memory():
     """Test that the memory package can be imported."""
     from memory import schema
+
     assert schema is not None
 
 
 def test_import_storage():
     """Test that storage backends can be imported."""
     from memory.storage import DictStore, LanceDBStore, SQLiteStore
+
     assert DictStore is not None
     assert LanceDBStore is not None
     assert SQLiteStore is not None
@@ -20,6 +22,7 @@ def test_import_storage():
 def test_import_schema():
     """Test that schema models can be imported."""
     from memory.schema import MemoryEntry, MemoryTier, MemoryType, TruthCategory
+
     assert MemoryEntry is not None
     assert MemoryType is not None
     assert TruthCategory is not None

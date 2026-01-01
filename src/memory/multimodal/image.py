@@ -161,9 +161,7 @@ class ImageProcessor:
 
                         if tag == "DateTimeOriginal":
                             try:
-                                metadata["timestamp"] = datetime.strptime(
-                                    value, "%Y:%m:%d %H:%M:%S"
-                                )
+                                metadata["timestamp"] = datetime.strptime(value, "%Y:%m:%d %H:%M:%S")
                             except ValueError:
                                 pass
 
@@ -193,9 +191,7 @@ class ImageProcessor:
 
         return metadata
 
-    def _convert_gps_coords(
-        self, coords: tuple, ref: str
-    ) -> float:
+    def _convert_gps_coords(self, coords: tuple, ref: str) -> float:
         """Convert GPS coordinates to decimal degrees."""
         try:
             degrees = float(coords[0])
@@ -258,12 +254,8 @@ class ImageProcessor:
             from PIL import Image
             from transformers import BlipForConditionalGeneration, BlipProcessor
 
-            processor = BlipProcessor.from_pretrained(
-                "Salesforce/blip-image-captioning-base"
-            )
-            model = BlipForConditionalGeneration.from_pretrained(
-                "Salesforce/blip-image-captioning-base"
-            )
+            processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
+            model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
 
             with Image.open(path) as img:
                 inputs = processor(img, return_tensors="pt")
@@ -358,19 +350,13 @@ Respond in JSON format:
             if self._clip_model is None:
                 from transformers import CLIPModel, CLIPProcessor
 
-                self._clip_model = CLIPModel.from_pretrained(
-                    "openai/clip-vit-base-patch32"
-                )
-                self._clip_processor = CLIPProcessor.from_pretrained(
-                    "openai/clip-vit-base-patch32"
-                )
+                self._clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
+                self._clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
 
             from PIL import Image
 
             with Image.open(path) as img:
-                inputs = self._clip_processor(
-                    images=img, return_tensors="pt"
-                )
+                inputs = self._clip_processor(images=img, return_tensors="pt")
                 outputs = self._clip_model.get_image_features(**inputs)
                 embedding = outputs[0].detach().numpy().tolist()
 

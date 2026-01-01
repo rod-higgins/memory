@@ -81,11 +81,13 @@ class PrivacyBudget:
 
         self.spent_epsilon += epsilon
         self.spent_delta += delta
-        self.costs.append({
-            "operation": operation,
-            "epsilon": epsilon,
-            "delta": delta,
-        })
+        self.costs.append(
+            {
+                "operation": operation,
+                "epsilon": epsilon,
+                "delta": delta,
+            }
+        )
 
         return True
 
@@ -130,9 +132,7 @@ class DifferentialPrivacy:
 
         # Calculate noise multiplier if not provided
         if noise_multiplier is None:
-            self.noise_multiplier = self._calculate_noise_multiplier(
-                epsilon, delta, clip_norm
-            )
+            self.noise_multiplier = self._calculate_noise_multiplier(epsilon, delta, clip_norm)
         else:
             self.noise_multiplier = noise_multiplier
 
@@ -148,7 +148,7 @@ class DifferentialPrivacy:
         Uses the analytic Gaussian mechanism formula.
         """
         if epsilon <= 0 or delta <= 0:
-            return float('inf')
+            return float("inf")
 
         # Simple approximation for Gaussian mechanism
         # σ ≥ √(2 * ln(1.25/δ)) * Δf / ε
@@ -367,17 +367,13 @@ class MomentsAccountant:
         # For more accurate results, use Google's DP library
 
         if noise_multiplier == 0:
-            return float('inf'), 1.0
+            return float("inf"), 1.0
 
         # Approximate epsilon using simple formula
         # ε ≈ q * √(2T * log(1/δ)) / σ
         # where q is sample rate, T is steps, σ is noise_multiplier
 
-        epsilon = (
-            sample_rate *
-            math.sqrt(2 * steps * math.log(1 / self.target_delta)) /
-            noise_multiplier
-        )
+        epsilon = sample_rate * math.sqrt(2 * steps * math.log(1 / self.target_delta)) / noise_multiplier
 
         return epsilon, self.target_delta
 
@@ -403,8 +399,7 @@ class MomentsAccountant:
         # T = (σ * ε / q)² / (2 * log(1/δ))
 
         max_steps = int(
-            (noise_multiplier * self.target_epsilon / sample_rate) ** 2 /
-            (2 * math.log(1 / self.target_delta))
+            (noise_multiplier * self.target_epsilon / sample_rate) ** 2 / (2 * math.log(1 / self.target_delta))
         )
 
         return max(1, max_steps)
