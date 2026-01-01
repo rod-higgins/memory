@@ -1,0 +1,239 @@
+# =============================================================================
+# PMS/PLM - Personal Memory System / Personal Language Model
+# =============================================================================
+# This .gitignore excludes all user-specific data to keep the repository
+# generic and safe for public sharing.
+# =============================================================================
+
+# =============================================================================
+# USER DATA - Never commit personal data
+# =============================================================================
+
+# Memory storage (contains personal memories)
+data/
+*.sqlite
+*.db
+*.lancedb/
+
+# Trained models (contain personalized weights)
+models/
+*.gguf
+*.ggml
+*.bin
+*.safetensors
+*.pt
+*.pth
+checkpoints/
+lora_adapter/
+merged/
+
+# Training data (derived from personal data)
+training_data/
+*.jsonl
+memories.json
+memories_*.json
+
+# Learning logs (contain interaction history)
+learning_log.jsonl
+corrections.jsonl
+
+# Exported memories
+exports/
+context_*.xml
+context_*.json
+
+# =============================================================================
+# DATA SOURCE EXPORTS - User's personal data exports
+# =============================================================================
+
+# Social media exports
+twitter_export/
+facebook_export/
+instagram_export/
+linkedin_export/
+reddit_export/
+
+# Communication exports
+gmail_export/
+email_export/
+imessage_export/
+whatsapp_export/
+slack_export/
+discord_export/
+
+# Document exports
+notion_export/
+obsidian_vault/
+evernote_export/
+
+# Media exports
+photos_export/
+youtube_export/
+spotify_export/
+
+# =============================================================================
+# CONFIGURATION - May contain API keys or personal settings
+# =============================================================================
+
+# User configuration (may contain paths, keys)
+config/user.toml
+config/local.toml
+config/*.local.toml
+.env
+.env.*
+*.env
+
+# API keys
+secrets/
+credentials/
+*.key
+*.pem
+
+# =============================================================================
+# PYTHON
+# =============================================================================
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+.python-version
+
+# Byte-compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+notebooks/*.ipynb
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Ruff
+.ruff_cache/
+
+# =============================================================================
+# IDE / EDITOR
+# =============================================================================
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# =============================================================================
+# OS GENERATED
+# =============================================================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+
+# =============================================================================
+# MISC
+# =============================================================================
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Archives
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Large files that shouldn't be in repo
+*.csv
+*.parquet
+
+# OAuth credentials
+memory_gmail.json
+*_token.json
+.venv-train/

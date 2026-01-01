@@ -1,0 +1,123 @@
+# Personal Memory System Configuration
+
+[memory]
+base_path = "~/memory/data"
+
+# Three-tier storage configuration
+[storage.short_term]
+backend = "dict"  # "redis" or "dict"
+redis_url = "redis://localhost:6379/0"
+ttl_hours = 72  # Time-to-live for short-term memories
+max_entries = 10000
+
+[storage.long_term]
+backend = "lancedb"
+lancedb_path = "${memory.base_path}/long_term/lancedb"
+sqlite_backup_path = "${memory.base_path}/long_term/sqlite/memories.db"
+
+[storage.persistent]
+backend = "sqlite"
+sqlite_path = "${memory.base_path}/persistent/core.sqlite"
+identity_path = "${memory.base_path}/persistent/identity.json"
+
+# Embedding configuration (local, private)
+[embedding]
+provider = "sentence_transformers"  # "sentence_transformers" or "ollama"
+model = "all-MiniLM-L6-v2"  # Or "BAAI/bge-small-en-v1.5"
+dimensions = 384  # Depends on model
+cache_dir = "~/.cache/memory/models"
+
+[embedding.ollama]
+base_url = "http://localhost:11434"
+model = "nomic-embed-text"
+
+# Local SLM for memory operations
+[slm]
+provider = "ollama"  # "ollama" or "transformers"
+model = "llama3.2:3b"  # Or "phi3:mini", "qwen2.5:3b"
+base_url = "http://localhost:11434"
+
+[slm.transformers]
+model = "microsoft/phi-3-mini-4k-instruct"
+device = "mps"  # "cuda", "mps", or "cpu"
+
+# Fine-tuning configuration
+[slm.tuning]
+enabled = true
+min_examples = 50  # Minimum corrections before fine-tuning
+adapter_path = "${memory.base_path}/adapters"
+base_model = "unsloth/llama-3.2-3b-bnb-4bit"
+
+# LLM providers for external enrichment (optional)
+[llm.claude]
+api_key_env = "ANTHROPIC_API_KEY"
+model = "claude-sonnet-4-20250514"
+
+[llm.ollama]
+base_url = "http://localhost:11434"
+model = "llama3.2:3b"
+
+# Ingestion sources
+[ingestion]
+claude_history_path = "~/.claude/history.jsonl"
+claude_projects_path = "~/.claude/projects"
+git_repos_path = "~/code"
+documents_path = "~/Documents"
+max_document_size_mb = 50
+
+[ingestion.enabled_sources]
+claude_history = true
+git_repos = true
+github = true
+documents = true
+imessage = false  # Protected - requires manual export
+email = false  # Protected - requires manual export
+notes = false  # Protected - requires manual export
+
+[ingestion.github]
+users = ["rod-higgins", "senuamedia"]
+include_private = true
+
+# Promotion rules configuration
+[promotion]
+check_interval_hours = 6
+auto_promote = true
+auto_demote = true
+
+# Short-term to Long-term thresholds
+[promotion.st_to_lt]
+min_confidence = 0.6
+min_corroborations = 2
+min_age_days = 3
+
+# Long-term to Persistent thresholds
+[promotion.lt_to_persistent]
+min_confidence = 0.9
+min_corroborations = 5
+min_age_days = 30
+require_absolute_truth = false  # If true, only ABSOLUTE truths can be promoted
+
+# Demotion thresholds
+[promotion.demotion]
+max_contradiction_count = 3
+min_confidence = 0.4
+max_inactive_days = 180
+
+# Export configuration
+[export]
+default_format = "json"  # "json", "markdown", "xml"
+context_injection_format = "xml"
+max_context_tokens = 4000
+
+# Query configuration
+[query]
+default_mode = "hybrid"  # "semantic", "keyword", "hybrid"
+default_limit = 20
+min_relevance_score = 0.5
+
+# Logging
+[logging]
+level = "INFO"  # DEBUG, INFO, WARNING, ERROR
+file = "${memory.base_path}/logs/memory.log"
+max_size_mb = 10
+backup_count = 3
