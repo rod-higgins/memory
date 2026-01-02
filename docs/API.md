@@ -400,7 +400,7 @@ async for datapoint in git_source.extract():
 
 # GitHub repositories
 github_source = GitHubSource(
-    username="rod-higgins",
+    username="your-username",
     include_repos=True,
     include_issues=True,
 )
@@ -500,7 +500,7 @@ plm init
 plm ingest claude-history
 plm ingest git-repos --path ~/code
 plm ingest documents --path ~/Documents
-plm ingest github --user rod-higgins
+plm ingest github --user your-username
 
 # Search
 plm search "programming preferences"
