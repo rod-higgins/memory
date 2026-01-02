@@ -26,12 +26,12 @@ async def test_pipeline():
     # Test 1: Import all modules
     print("[1] Testing imports...")
     try:
-        from memory import MemoryAPI, MemoryAugmenter, create_augmenter
-        from memory.slm.trainer import PersonalSLMTrainer, TrainingConfig
-        from memory.slm.model import get_personal_slm, HybridPersonalSLM
-        from memory.slm.data import MemoryDataset, prepare_training_data
-        from memory.export.formats import MemoryExporter, ExportFormat
-        from memory.query.interface import MemoryQuery
+        from memory import MemoryAPI, MemoryAugmenter, create_augmenter  # noqa: F401
+        from memory.export.formats import ExportFormat, MemoryExporter  # noqa: F401
+        from memory.query.interface import MemoryQuery  # noqa: F401
+        from memory.slm.data import MemoryDataset, prepare_training_data  # noqa: F401
+        from memory.slm.model import HybridPersonalSLM, get_personal_slm  # noqa: F401
+        from memory.slm.trainer import PersonalSLMTrainer, TrainingConfig  # noqa: F401
         print("    All modules imported successfully")
     except ImportError as e:
         print(f"    Import error: {e}")
@@ -42,7 +42,7 @@ async def test_pipeline():
     api = MemoryAPI(base_path="~/memory/data")
     await api.initialize()
     stats = await api.stats()
-    print(f"    API initialized")
+    print("    API initialized")
     print(f"    Total memories: {stats['counts'].get('total', 0)}")
 
     # Test 3: Test query interface

@@ -47,8 +47,8 @@ def set_session_cookie(response: Response, token: str) -> None:
         key=SESSION_COOKIE_NAME,
         value=token,
         httponly=True,
-        secure=False,  # Set to True in production with HTTPS
-        samesite="lax",
+        secure=True,  # Required for cross-origin with SameSite=None
+        samesite="none",  # Allow cross-origin (frontend on different subdomain)
         max_age=ACCESS_TOKEN_EXPIRE_HOURS * 3600,
     )
 

@@ -142,7 +142,7 @@ async def ingest_github(config: dict[str, Any]):
 
         count = 0
         async for data_point in source.iterate():
-            memory = MemoryEntry(tier=MemoryTier.PERSISTENT, 
+            memory = MemoryEntry(tier=MemoryTier.PERSISTENT,
                 content=data_point.content,
                 memory_type=MemoryType.FACT,
                 truth_category=TruthCategory.ABSOLUTE,
@@ -204,7 +204,7 @@ async def ingest_local_files(config: dict[str, Any]):
         count = 0
         try:
             async for data_point in source.iterate():
-                memory = MemoryEntry(tier=MemoryTier.PERSISTENT, 
+                memory = MemoryEntry(tier=MemoryTier.PERSISTENT,
                     content=data_point.content[:50000],
                     memory_type=MemoryType.FACT,
                     truth_category=TruthCategory.CONTEXTUAL,
@@ -267,7 +267,7 @@ async def ingest_git_repos(config: dict[str, Any]):
     total_count = 0
     try:
         async for data_point in source.iterate():
-            memory = MemoryEntry(tier=MemoryTier.PERSISTENT, 
+            memory = MemoryEntry(tier=MemoryTier.PERSISTENT,
                 content=data_point.content,
                 memory_type=MemoryType.FACT,
                 truth_category=TruthCategory.ABSOLUTE,
@@ -331,7 +331,7 @@ async def ingest_aws(config: dict[str, Any]):
     total_count = 0
     try:
         async for data_point in source.iterate():
-            memory = MemoryEntry(tier=MemoryTier.PERSISTENT, 
+            memory = MemoryEntry(tier=MemoryTier.PERSISTENT,
                 content=data_point.content,
                 memory_type=MemoryType.FACT,
                 truth_category=TruthCategory.ABSOLUTE,
@@ -434,7 +434,7 @@ async def ingest_exports(config: dict[str, Any]):
                 source = GmailExportSource(export_path=str(mbox_file))
                 count = 0
                 async for dp in source.iterate():
-                    memory = MemoryEntry(tier=MemoryTier.PERSISTENT, 
+                    memory = MemoryEntry(tier=MemoryTier.PERSISTENT,
                         content=dp.content,
                         memory_type=MemoryType.FACT,
                         truth_category=TruthCategory.CONTEXTUAL,
@@ -469,7 +469,7 @@ async def ingest_exports(config: dict[str, Any]):
             print(f"\n  Found {platform.title()} export")
             count = 0
             async for dp in source.iterate():
-                memory = MemoryEntry(tier=MemoryTier.PERSISTENT, 
+                memory = MemoryEntry(tier=MemoryTier.PERSISTENT,
                     content=dp.content,
                     memory_type=MemoryType.FACT,
                     truth_category=TruthCategory.CONTEXTUAL,

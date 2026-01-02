@@ -17,10 +17,9 @@ Memory Types:
 - CONTEXT: Domain/situational information
 """
 
-import asyncio
 import re
 import sqlite3
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 
 
@@ -159,7 +158,7 @@ def recategorize_all():
 
         try:
             created_at = datetime.fromisoformat(row["created_at"]) if row["created_at"] else datetime.now()
-        except:
+        except (ValueError, TypeError):
             created_at = datetime.now()
 
         new_tier, new_type = categorize_memory(content, domains, tags, created_at)
@@ -172,11 +171,11 @@ def recategorize_all():
         if new_tier != row["tier"] or new_type != row["memory_type"]:
             updates.append((new_tier, new_type, row["id"]))
 
-    print(f"\nNew tier distribution:")
+    print("\nNew tier distribution:")
     for tier, count in sorted(tier_changes.items()):
         print(f"  {tier}: {count}")
 
-    print(f"\nNew type distribution:")
+    print("\nNew type distribution:")
     for mtype, count in sorted(type_changes.items(), key=lambda x: -x[1]):
         print(f"  {mtype}: {count}")
 

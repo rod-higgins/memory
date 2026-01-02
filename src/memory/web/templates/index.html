@@ -876,44 +876,62 @@ python scripts/setup_auth.py</pre>
                                     :class="showFullContext ? '' : 'max-h-24 overflow-y-hidden'">{{ compareResults.context_preview }}</pre>
                             </div>
 
-                            <!-- Side by Side Results -->
-                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                <!-- With Context -->
-                                <div class="bg-card-bg rounded-2xl shadow-sm border border-green-200 overflow-hidden">
-                                    <div class="bg-green-50 px-6 py-3 border-b border-green-200">
-                                        <h3 class="font-semibold text-green-800">
-                                            <i class="fas fa-check-circle mr-2"></i>With PLM Context
-                                        </h3>
-                                    </div>
-                                    <div class="p-6 space-y-4">
-                                        <div v-for="(result, provider) in compareResults.with_context" :key="'with-' + provider"
-                                            class="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
-                                            <div class="flex items-center justify-between mb-2">
-                                                <span class="font-medium text-gray-800">{{ provider }}</span>
-                                                <span class="text-xs text-gray-400">{{ result.latency_ms }}ms</span>
-                                            </div>
-                                            <p v-if="result.error" class="text-red-500 text-sm">{{ result.error }}</p>
-                                            <p v-else class="text-gray-600 text-sm whitespace-pre-wrap">{{ result.response }}</p>
-                                        </div>
-                                    </div>
-                                </div>
+                            <!-- Model Accordion Results -->
+                            <div class="space-y-3">
+                                <h3 class="font-semibold text-gray-800 mb-4">
+                                    <i class="fas fa-robot text-accent mr-2"></i>Model Responses (click to expand)
+                                </h3>
 
-                                <!-- Without Context -->
-                                <div class="bg-card-bg rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                                    <div class="bg-gray-50 px-6 py-3 border-b border-gray-200">
-                                        <h3 class="font-semibold text-gray-600">
-                                            <i class="fas fa-times-circle mr-2"></i>Without Context
-                                        </h3>
-                                    </div>
-                                    <div class="p-6 space-y-4">
-                                        <div v-for="(result, provider) in compareResults.without_context" :key="'without-' + provider"
-                                            class="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
-                                            <div class="flex items-center justify-between mb-2">
-                                                <span class="font-medium text-gray-800">{{ provider }}</span>
-                                                <span class="text-xs text-gray-400">{{ result.latency_ms }}ms</span>
+                                <!-- Accordion for each model - sorted with Claude first -->
+                                <div v-for="provider in sortedProviders" :key="'accordion-' + provider"
+                                    class="bg-card-bg rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+
+                                    <!-- Accordion Header -->
+                                    <button @click="expandedModel === provider ? expandedModel = null : expandedModel = provider"
+                                        class="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition">
+                                        <div class="flex items-center space-x-3">
+                                            <i class="fas fa-robot text-accent"></i>
+                                            <span class="font-semibold text-gray-800">{{ getProviderDisplayName(provider) }}</span>
+                                            <span class="text-xs px-2 py-1 rounded-full"
+                                                :class="compareResults.with_context[provider]?.error ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'">
+                                                {{ compareResults.with_context[provider]?.error ? 'Error' : compareResults.with_context[provider]?.model }}
+                                            </span>
+                                            <span class="text-xs text-gray-400">{{ compareResults.with_context[provider]?.latency_ms?.toFixed(0) }}ms</span>
+                                        </div>
+                                        <i class="fas transition-transform duration-200"
+                                            :class="expandedModel === provider ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                                    </button>
+
+                                    <!-- Accordion Content -->
+                                    <div v-show="expandedModel === provider" class="border-t border-gray-200">
+                                        <div class="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-200">
+                                            <!-- With Context Response -->
+                                            <div class="p-5">
+                                                <div class="flex items-center mb-3">
+                                                    <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                                    <span class="font-medium text-green-700">With PLM Context</span>
+                                                </div>
+                                                <div class="bg-green-50 rounded-lg p-4 max-h-80 overflow-y-auto">
+                                                    <p v-if="compareResults.with_context[provider]?.error" class="text-red-500 text-sm">{{ compareResults.with_context[provider].error }}</p>
+                                                    <p v-else class="text-gray-700 text-sm whitespace-pre-wrap leading-relaxed">{{ compareResults.with_context[provider]?.response }}</p>
+                                                </div>
                                             </div>
-                                            <p v-if="result.error" class="text-red-500 text-sm">{{ result.error }}</p>
-                                            <p v-else class="text-gray-600 text-sm whitespace-pre-wrap">{{ result.response }}</p>
+
+                                            <!-- Without Context Response -->
+                                            <div class="p-5">
+                                                <div class="flex items-center mb-3">
+                                                    <i class="fas fa-times-circle text-gray-400 mr-2"></i>
+                                                    <span class="font-medium text-gray-500">Without Context</span>
+                                                </div>
+                                                <div class="bg-gray-50 rounded-lg p-4 max-h-80 overflow-y-auto">
+                                                    <p v-if="compareResults.without_context[provider]?.error" class="text-red-500 text-sm">
+                                                        {{ compareResults.without_context[provider].error }}
+                                                    </p>
+                                                    <p v-else class="text-gray-600 text-sm whitespace-pre-wrap leading-relaxed">
+                                                        {{ compareResults.without_context[provider]?.response }}
+                                                    </p>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -2134,8 +2152,8 @@ python scripts/setup_auth.py</pre>
 
                 <!-- Footer -->
                 <div class="flex items-center justify-between px-6 py-3 border-t border-gray-100 bg-gray-50 rounded-b-2xl flex-shrink-0">
-                    <a href="https://github.com/rod-higgins/memory/issues" target="_blank" class="text-sm text-gray-500 hover:text-accent">
-                        <i class="fas fa-bug mr-1"></i> Report an Issue
+                    <a href="#" @click.prevent="showHelpModal = false" class="text-sm text-gray-500 hover:text-accent">
+                        <i class="fas fa-question-circle mr-1"></i> Help & Support
                     </a>
                     <button @click="closeHelp" class="px-4 py-1.5 text-sm text-gray-600 hover:text-gray-800">Close</button>
                 </div>
@@ -2273,6 +2291,36 @@ python scripts/setup_auth.py</pre>
                 const compareResults = ref(null);
                 const comparing = ref(false);
                 const showFullContext = ref(false);
+                const expandedModel = ref('claude');  // Claude open by default
+
+                // Order providers: Claude first, then cloud providers, then local SLMs
+                const sortedProviders = computed(() => {
+                    if (!compareResults.value?.with_context) return [];
+                    const order = ['claude', 'chatgpt', 'amazonq', 'ollama_qwen2.5:7b', 'ollama_mistral:7b', 'ollama_phi3:14b', 'ollama_tinyllama:latest'];
+                    const providers = Object.keys(compareResults.value.with_context);
+                    return providers.sort((a, b) => {
+                        const aIndex = order.indexOf(a);
+                        const bIndex = order.indexOf(b);
+                        if (aIndex === -1 && bIndex === -1) return 0;
+                        if (aIndex === -1) return 1;
+                        if (bIndex === -1) return -1;
+                        return aIndex - bIndex;
+                    });
+                });
+
+                // Helper to get display name for provider
+                const getProviderDisplayName = (providerId) => {
+                    const names = {
+                        'claude': 'Claude (Anthropic)',
+                        'chatgpt': 'ChatGPT (OpenAI)',
+                        'amazonq': 'Amazon Bedrock',
+                        'ollama_qwen2.5:7b': 'Qwen 2.5 7B (Local)',
+                        'ollama_mistral:7b': 'Mistral 7B (Local)',
+                        'ollama_phi3:14b': 'Phi-3 14B (Local)',
+                        'ollama_tinyllama:latest': 'TinyLlama (Local)',
+                    };
+                    return names[providerId] || providerId;
+                };
 
                 // Add memory state
                 const newMemory = reactive({ content: '', tags: [], tier: 'persistent' });
@@ -2313,7 +2361,7 @@ python scripts/setup_auth.py</pre>
                 // Methods
                 const loadStats = async () => {
                     try {
-                        const res = await fetch('/api/stats');
+                        const res = await fetch('/api/stats', { credentials: 'include' });
                         stats.value = await res.json();
                     } catch (e) { console.error('Error loading stats:', e); }
                 };
@@ -2326,7 +2374,7 @@ python scripts/setup_auth.py</pre>
                         let url = `/api/memories?limit=${pageSize.value}&offset=${offset}`;
                         if (filterTier.value) url += `&tier=${filterTier.value}`;
                         if (filterDomain.value) url += `&domain=${filterDomain.value}`;
-                        const res = await fetch(url);
+                        const res = await fetch(url, { credentials: 'include' });
                         const data = await res.json();
                         memories.value = data.memories || data || [];
                         totalMemories.value = data.total || data.count || memories.value.length;
@@ -2376,7 +2424,7 @@ python scripts/setup_auth.py</pre>
 
                 const loadConnections = async () => {
                     try {
-                        const res = await fetch('/api/connections');
+                        const res = await fetch('/api/connections', { credentials: 'include' });
                         const data = await res.json();
                         connections.value = data.connections || data || [];
                     } catch (e) { console.error('Error loading connections:', e); }
@@ -2384,7 +2432,7 @@ python scripts/setup_auth.py</pre>
 
                 const loadProviders = async () => {
                     try {
-                        const res = await fetch('/api/compare/providers');
+                        const res = await fetch('/api/compare/providers', { credentials: 'include' });
                         const data = await res.json();
                         compareProviders.value = data.providers || [];
                         availableLLMs.value = (data.providers || []).filter(p => p.available);
@@ -2402,7 +2450,8 @@ python scripts/setup_auth.py</pre>
                             body: JSON.stringify({
                                 message: compareQuery.value,
                                 max_memories: compareMaxMemories.value
-                            })
+                            }),
+                            credentials: 'include'
                         });
                         compareResults.value = await res.json();
                     } catch (e) {
@@ -2444,7 +2493,8 @@ python scripts/setup_auth.py</pre>
                                 message: query,
                                 provider: selectedLLM.value,
                                 max_memories: 10
-                            })
+                            }),
+                            credentials: 'include'
                         });
                         const data = await res.json();
 
@@ -2478,7 +2528,8 @@ python scripts/setup_auth.py</pre>
                         await fetch('/api/memories', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(newMemory)
+                            body: JSON.stringify(newMemory),
+                            credentials: 'include'
                         });
                         showAddModal.value = false;
                         newMemory.content = '';
@@ -2500,7 +2551,7 @@ python scripts/setup_auth.py</pre>
                 const generateContext = async () => {
                     contextLoading.value = true;
                     try {
-                        const res = await fetch(`/api/context?max_memories=${contextMaxMemories.value}`);
+                        const res = await fetch(`/api/context?max_memories=${contextMaxMemories.value}`, { credentials: 'include' });
                         const data = await res.json();
                         generatedContext.value = data.context || 'No context generated';
                     } catch (e) {
@@ -2517,7 +2568,7 @@ python scripts/setup_auth.py</pre>
                 // Data Ingestion
                 const loadSources = async () => {
                     try {
-                        const res = await fetch('/api/sources');
+                        const res = await fetch('/api/sources', { credentials: 'include' });
                         ingestionSources.value = await res.json();
                     } catch (e) { console.error('Error loading sources:', e); }
                 };
@@ -2528,7 +2579,8 @@ python scripts/setup_auth.py</pre>
                         const res = await fetch('/api/ingest', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ source: sourceId, limit: 100 })
+                            body: JSON.stringify({ source: sourceId, limit: 100 }),
+                            credentials: 'include'
                         });
                         const data = await res.json();
                         ingestionStatus.value[sourceId] = {
@@ -2548,7 +2600,7 @@ python scripts/setup_auth.py</pre>
                     synthesisLoading.value = true;
                     synthesisResult.value = null;
                     try {
-                        const res = await fetch('/api/synthesis');
+                        const res = await fetch('/api/synthesis', { credentials: 'include' });
                         synthesisResult.value = await res.json();
                     } catch (e) {
                         synthesisResult.value = { error: e.message };
@@ -2560,7 +2612,7 @@ python scripts/setup_auth.py</pre>
                 // LLM Management
                 const loadLLMs = async () => {
                     try {
-                        const res = await fetch('/api/llms');
+                        const res = await fetch('/api/llms', { credentials: 'include' });
                         llmModels.value = await res.json();
                     } catch (e) { console.error('Error loading LLMs:', e); }
                 };
@@ -2570,7 +2622,8 @@ python scripts/setup_auth.py</pre>
                         const res = await fetch('/api/llms', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(newLLM)
+                            body: JSON.stringify(newLLM),
+                            credentials: 'include'
                         });
                         if (res.ok) {
                             showAddLLMModal.value = false;
@@ -2596,7 +2649,7 @@ python scripts/setup_auth.py</pre>
                 const deleteLLM = async (llm) => {
                     if (!confirm(`Delete "${llm.name}"?`)) return;
                     try {
-                        await fetch(`/api/llms/${llm.id}`, { method: 'DELETE' });
+                        await fetch(`/api/llms/${llm.id}`, { method: 'DELETE', credentials: 'include' });
                         await loadLLMs();
                         await loadProviders();
                     } catch (e) { console.error('Error deleting LLM:', e); }
@@ -2606,7 +2659,7 @@ python scripts/setup_auth.py</pre>
                     showTestResult.value = true;
                     testResult.value = { loading: true };
                     try {
-                        const res = await fetch(`/api/llms/${llm.id}/test`, { method: 'POST' });
+                        const res = await fetch(`/api/llms/${llm.id}/test`, { method: 'POST', credentials: 'include' });
                         const data = await res.json();
                         testResult.value = data;
                     } catch (e) {
@@ -2664,7 +2717,7 @@ python scripts/setup_auth.py</pre>
                 // SLM Management
                 const loadSLMs = async () => {
                     try {
-                        const res = await fetch('/api/slms');
+                        const res = await fetch('/api/slms', { credentials: 'include' });
                         slmModels.value = await res.json();
                     } catch (e) { console.error('Error loading SLMs:', e); }
                 };
@@ -2674,7 +2727,8 @@ python scripts/setup_auth.py</pre>
                         const res = await fetch('/api/slms', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(newSLM)
+                            body: JSON.stringify(newSLM),
+                            credentials: 'include'
                         });
                         if (res.ok) {
                             showAddSLMModal.value = false;
@@ -2690,7 +2744,8 @@ python scripts/setup_auth.py</pre>
                         await fetch(`/api/slms/${slm.id}`, {
                             method: 'PATCH',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ enabled: !slm.enabled })
+                            body: JSON.stringify({ enabled: !slm.enabled }),
+                            credentials: 'include'
                         });
                         await loadSLMs();
                         await loadProviders();
@@ -2700,7 +2755,7 @@ python scripts/setup_auth.py</pre>
                 const deleteSLM = async (slm) => {
                     if (!confirm(`Delete "${slm.name}"?`)) return;
                     try {
-                        await fetch(`/api/slms/${slm.id}`, { method: 'DELETE' });
+                        await fetch(`/api/slms/${slm.id}`, { method: 'DELETE', credentials: 'include' });
                         await loadSLMs();
                         await loadProviders();
                     } catch (e) { console.error('Error deleting SLM:', e); }
@@ -2710,7 +2765,7 @@ python scripts/setup_auth.py</pre>
                     showTestResult.value = true;
                     testResult.value = { loading: true };
                     try {
-                        const res = await fetch(`/api/slms/${slm.id}/test`, { method: 'POST' });
+                        const res = await fetch(`/api/slms/${slm.id}/test`, { method: 'POST', credentials: 'include' });
                         const data = await res.json();
                         testResult.value = data;
                     } catch (e) {
@@ -2760,7 +2815,7 @@ python scripts/setup_auth.py</pre>
                 const refreshOllamaModels = async () => {
                     slmRefreshing.value = true;
                     try {
-                        const res = await fetch('/api/slms/ollama/status');
+                        const res = await fetch('/api/slms/ollama/status', { credentials: 'include' });
                         const data = await res.json();
                         ollamaStatus.value = data;
                         if (data.running && data.models) {
@@ -2776,14 +2831,14 @@ python scripts/setup_auth.py</pre>
 
                 const loadOllamaModelsList = async () => {
                     try {
-                        const res = await fetch('/api/slms/ollama/models');
+                        const res = await fetch('/api/slms/ollama/models', { credentials: 'include' });
                         ollamaModelsList.value = await res.json();
                     } catch (e) { console.error('Error loading Ollama models:', e); }
                 };
 
                 const loadAvailableModels = async () => {
                     try {
-                        const res = await fetch('/api/slms/ollama/available');
+                        const res = await fetch('/api/slms/ollama/available', { credentials: 'include' });
                         availableModels.value = await res.json();
                     } catch (e) { console.error('Error loading available models:', e); }
                 };
@@ -2814,7 +2869,7 @@ python scripts/setup_auth.py</pre>
                 const deleteOllamaModel = async (modelName) => {
                     if (!confirm(`Delete model "${modelName}"? This will remove the model files from disk.`)) return;
                     try {
-                        const res = await fetch(`/api/slms/ollama/${encodeURIComponent(modelName)}`, { method: 'DELETE' });
+                        const res = await fetch(`/api/slms/ollama/${encodeURIComponent(modelName)}`, { method: 'DELETE', credentials: 'include' });
                         const data = await res.json();
                         if (data.success) {
                             await loadSLMs();
@@ -2882,7 +2937,7 @@ python scripts/setup_auth.py</pre>
                 // Auth Functions
                 const checkAuth = async () => {
                     try {
-                        const res = await fetch('/api/auth/status');
+                        const res = await fetch('/api/auth/status', { credentials: 'include' });
                         const data = await res.json();
 
                         if (data.authenticated) {
@@ -2909,7 +2964,8 @@ python scripts/setup_auth.py</pre>
                         const res = await fetch('/api/auth/login', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(loginForm)
+                            body: JSON.stringify(loginForm),
+                            credentials: 'include'
                         });
 
                         if (!res.ok) {
@@ -2924,6 +2980,8 @@ python scripts/setup_auth.py</pre>
                         if (data.auth_state === 'mfa_setup') {
                             authState.value = 'mfa_setup';
                             await loadMfaSetup();
+                        } else if (data.auth_state === 'mfa_verify') {
+                            authState.value = 'mfa_verify';
                         } else {
                             authState.value = 'authenticated';
                             initializeApp();
@@ -2937,7 +2995,7 @@ python scripts/setup_auth.py</pre>
 
                 const loadMfaSetup = async () => {
                     try {
-                        const res = await fetch('/api/auth/mfa/setup');
+                        const res = await fetch('/api/auth/mfa/setup', { credentials: 'include' });
                         if (res.ok) {
                             const data = await res.json();
                             mfaSetup.secret = data.secret;
@@ -2956,7 +3014,8 @@ python scripts/setup_auth.py</pre>
                         const res = await fetch('/api/auth/mfa/verify', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ totp_code: mfaCode.value })
+                            body: JSON.stringify({ totp_code: mfaCode.value }),
+                            credentials: 'include'
                         });
 
                         if (!res.ok) {
@@ -2981,7 +3040,7 @@ python scripts/setup_auth.py</pre>
 
                 const handleLogout = async () => {
                     try {
-                        await fetch('/api/auth/logout', { method: 'POST' });
+                        await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
                     } catch (e) {
                         console.error('Logout error:', e);
                     }
@@ -2995,7 +3054,7 @@ python scripts/setup_auth.py</pre>
                 const loadAdminUsers = async () => {
                     if (currentUser.value?.role !== 'admin') return;
                     try {
-                        const res = await fetch('/api/admin/users');
+                        const res = await fetch('/api/admin/users', { credentials: 'include' });
                         if (res.ok) {
                             const data = await res.json();
                             adminUsers.value = data.users || [];
@@ -3010,7 +3069,8 @@ python scripts/setup_auth.py</pre>
                         const res = await fetch('/api/admin/users', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(newUserForm)
+                            body: JSON.stringify(newUserForm),
+                            credentials: 'include'
                         });
                         if (res.ok) {
                             showAddUserModal.value = false;
@@ -3031,7 +3091,7 @@ python scripts/setup_auth.py</pre>
                 const resetUserMfa = async (user) => {
                     if (!confirm(`Reset MFA for ${user.username}? They will need to set up MFA again on next login.`)) return;
                     try {
-                        const res = await fetch(`/api/admin/users/${user.id}/reset-mfa`, { method: 'POST' });
+                        const res = await fetch(`/api/admin/users/${user.id}/reset-mfa`, { method: 'POST', credentials: 'include' });
                         if (res.ok) {
                             await loadAdminUsers();
                         } else {
@@ -3172,7 +3232,7 @@ python scripts/setup_auth.py</pre>
                     editUserError.value = '';
                     editUserSuccess.value = '';
                     try {
-                        const res = await fetch(`/api/admin/users/${editUserForm.id}/reset-mfa`, { method: 'POST' });
+                        const res = await fetch(`/api/admin/users/${editUserForm.id}/reset-mfa`, { method: 'POST', credentials: 'include' });
                         if (res.ok) {
                             editUserSuccess.value = 'MFA reset successfully';
                             await loadAdminUsers();
@@ -3310,7 +3370,7 @@ python scripts/setup_auth.py</pre>
                     // Chat
                     chatTab, conversations, selectedConversation,
                     chatMessages, newMessage, compareProviders, compareQuery, compareMaxMemories,
-                    compareResults, comparing, showFullContext, newMemory, newTag,
+                    compareResults, comparing, showFullContext, expandedModel, sortedProviders, getProviderDisplayName, newMemory, newTag,
                     selectedLLM, availableLLMs, chatLoading,
                     // Tool modals
                     showContextGenerator, showIngestion, showSynthesis,
