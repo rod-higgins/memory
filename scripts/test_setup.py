@@ -20,15 +20,15 @@ async def main():
     # Test 1: Import core modules
     print("[1] Testing imports...")
     try:
-        from memory.schema.memory_entry import (
+        from memory.ingestion.parsers.claude_history import ClaudeHistoryParser
+        from memory.schema.identity import IdentityProfile
+        from memory.schema.memory_entry import (  # noqa: F401
             MemoryEntry,
             MemoryTier,
-            TruthCategory,
             MemoryType,
+            TruthCategory,
         )
-        from memory.schema.identity import IdentityProfile
         from memory.storage.manager import StorageManager
-        from memory.ingestion.parsers.claude_history import ClaudeHistoryParser
 
         print("    ✓ All core modules imported successfully")
     except ImportError as e:

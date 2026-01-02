@@ -230,10 +230,17 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
-    # CORS for local development
+    # CORS - must specify exact origins when using credentials
+    # Read frontend domain from environment variable
+    frontend_domain = os.environ.get("FRONTEND_DOMAIN", "http://localhost:8765")
+    cors_origins = [
+        frontend_domain,
+        "http://localhost:8765",
+        "http://127.0.0.1:8765",
+    ]
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=cors_origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -386,7 +393,9 @@ def create_app() -> FastAPI:
         await auth_store.record_login_attempt(request.username_or_email, ip_address, True)
 
         # Determine auth state
-        auth_state = AuthState.AUTHENTICATED if user.mfa_enabled else AuthState.MFA_SETUP
+        # If MFA is enabled, user must verify TOTP code before being authenticated
+        # If MFA is not enabled, user must set it up first
+        auth_state = AuthState.MFA_VERIFY if user.mfa_enabled else AuthState.MFA_SETUP
 
         return TokenResponse(
             access_token=token,

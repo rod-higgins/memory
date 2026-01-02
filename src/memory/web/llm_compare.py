@@ -417,42 +417,59 @@ class CopilotProvider(LLMProvider):
             if context:
                 full_prompt = f"Context:\n{context}\n\nQuestion: {message}"
 
-            # Use GitHub Models API (models.github.com)
-            async with httpx.AsyncClient(timeout=60.0) as client:
-                response = await client.post(
-                    "https://models.inference.ai.azure.com/chat/completions",
-                    headers={
-                        "Authorization": f"Bearer {token}",
-                        "Content-Type": "application/json",
-                    },
-                    json={
-                        "messages": [{"role": "user", "content": full_prompt}],
-                        "model": "gpt-4o",
-                        "max_tokens": 2048,
-                    },
-                )
-
-                latency = (time.time() - start) * 1000
-
-                if response.status_code != 200:
-                    return LLMResponse(
-                        provider=self.name,
-                        model="github-models",
-                        response="",
-                        with_context=bool(context),
-                        latency_ms=latency,
-                        error=f"GitHub Models API error: {response.status_code}",
+            # Use GitHub Models API with retry for rate limits
+            import asyncio
+            max_retries = 3
+            for attempt in range(max_retries):
+                async with httpx.AsyncClient(timeout=60.0) as client:
+                    response = await client.post(
+                        "https://models.inference.ai.azure.com/chat/completions",
+                        headers={
+                            "Authorization": f"Bearer {token}",
+                            "Content-Type": "application/json",
+                        },
+                        json={
+                            "messages": [{"role": "user", "content": full_prompt}],
+                            "model": "gpt-4o",
+                            "max_tokens": 2048,
+                        },
                     )
 
-                result_json = response.json()
-                return LLMResponse(
-                    provider=self.name,
-                    model="github-models-gpt4o",
-                    response=result_json["choices"][0]["message"]["content"],
-                    with_context=bool(context),
-                    latency_ms=latency,
-                    context_used=context[:200] if context else None,
-                )
+                    latency = (time.time() - start) * 1000
+
+                    if response.status_code == 429:  # Rate limited
+                        if attempt < max_retries - 1:
+                            await asyncio.sleep(2 ** attempt)  # Exponential backoff
+                            continue
+                        return LLMResponse(
+                            provider=self.name,
+                            model="github-models",
+                            response="",
+                            with_context=bool(context),
+                            latency_ms=latency,
+                            error="GitHub Models rate limited (429). Try again later.",
+                        )
+
+                    if response.status_code != 200:
+                        return LLMResponse(
+                            provider=self.name,
+                            model="github-models",
+                            response="",
+                            with_context=bool(context),
+                            latency_ms=latency,
+                            error=f"GitHub Models API error: {response.status_code}",
+                        )
+
+                    # Success
+                    result_json = response.json()
+                    return LLMResponse(
+                        provider=self.name,
+                        model="github-models-gpt4o",
+                        response=result_json["choices"][0]["message"]["content"],
+                        with_context=bool(context),
+                        latency_ms=latency,
+                        context_used=context[:200] if context else None,
+                    )
 
         except Exception as e:
             return LLMResponse(
@@ -652,7 +669,7 @@ class LLMCompare:
         self.providers: dict[str, LLMProvider] = {
             "claude": ClaudeProvider(),
             "chatgpt": ChatGPTProvider(),
-            "copilot": CopilotProvider(),
+            # "copilot": CopilotProvider(),  # Disabled - rate limited
             "amazonq": AmazonQProvider(),
         }
 

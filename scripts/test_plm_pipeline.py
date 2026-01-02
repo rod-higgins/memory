@@ -25,8 +25,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 async def test_ingestion():
     """Test data ingestion from configured sources."""
+    from memory.schema import ConfidenceScore, MemoryEntry, MemoryTier, MemoryType, TruthCategory
     from memory.storage import StorageManager
-    from memory.schema import MemoryEntry, MemoryType, MemoryTier, TruthCategory, ConfidenceScore
 
     print("\n" + "=" * 70)
     print("PHASE 1: DATA INGESTION TEST")
@@ -56,11 +56,11 @@ async def test_ingestion():
     github_accounts = [a.get("username") for a in config.get("code", {}).get("github", {}).get("accounts", [])]
 
     if github_accounts:
-        from memory.ingestion.sources import GitHubSource
-        import subprocess
 
         # Get token from gh CLI config
         import yaml
+
+        from memory.ingestion.sources import GitHubSource
         try:
             gh_config = Path.home() / ".config" / "gh" / "hosts.yml"
             if gh_config.exists():
@@ -179,7 +179,7 @@ async def test_ingestion():
     # Get stats
     stats = await manager.get_stats()
     counts = stats.get("counts", {})
-    print(f"\n  Storage stats:")
+    print("\n  Storage stats:")
     print(f"    Short-term: {counts.get('short_term', 0)}")
     print(f"    Long-term:  {counts.get('long_term', 0)}")
     print(f"    Persistent: {counts.get('persistent', 0)}")
@@ -210,7 +210,7 @@ async def test_training_data():
             min_confidence=0.3,  # Lower for testing
         )
 
-        print(f"\n  Results:")
+        print("\n  Results:")
         print(f"    Total memories:     {stats.get('total_memories', 0)}")
         print(f"    Filtered memories:  {stats.get('filtered_memories', 0)}")
         print(f"    Training examples:  {stats.get('training_examples', 0)}")
@@ -220,7 +220,7 @@ async def test_training_data():
         # Show sample training data
         chat_path = Path(stats.get("chat_path", ""))
         if chat_path.exists():
-            print(f"\n  Sample training example:")
+            print("\n  Sample training example:")
             with open(chat_path) as f:
                 first_line = f.readline()
                 if first_line:
@@ -263,35 +263,13 @@ def check_training_requirements():
     except ImportError:
         pass
 
-    try:
-        import transformers
-        requirements["transformers"] = True
-    except ImportError:
-        pass
+    from importlib.util import find_spec
 
-    try:
-        import peft
-        requirements["peft"] = True
-    except ImportError:
-        pass
-
-    try:
-        import bitsandbytes
-        requirements["bitsandbytes"] = True
-    except ImportError:
-        pass
-
-    try:
-        import accelerate
-        requirements["accelerate"] = True
-    except ImportError:
-        pass
-
-    try:
-        import datasets
-        requirements["datasets"] = True
-    except ImportError:
-        pass
+    requirements["transformers"] = find_spec("transformers") is not None
+    requirements["peft"] = find_spec("peft") is not None
+    requirements["bitsandbytes"] = find_spec("bitsandbytes") is not None
+    requirements["accelerate"] = find_spec("accelerate") is not None
+    requirements["datasets"] = find_spec("datasets") is not None
 
     # Check Ollama
     import subprocess

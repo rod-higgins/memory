@@ -49,14 +49,13 @@ class ContentAnalyzer:
     quality assessment for each memory.
     """
 
-    # User's known domains of interest (could be loaded from identity)
+    # User's known domains of interest (loaded from identity config)
+    # These are example domains - actual values come from user's identity.toml
     USER_DOMAINS = [
         "software",
         "programming",
         "development",
         "code",
-        "drupal",
-        "php",
         "python",
         "javascript",
         "typescript",
@@ -71,9 +70,6 @@ class ContentAnalyzer:
         "business",
         "consulting",
         "project management",
-        "senua",
-        "senuamedia",
-        "higgins",
     ]
 
     def __init__(
@@ -179,7 +175,7 @@ class ContentAnalyzer:
             signals.append("has_engagement")
 
         # Business email
-        if any(d in ["business", "work", "senuamedia"] for d in (metadata.get("domains") or [])):
+        if any(d in ["business", "work", "professional"] for d in (metadata.get("domains") or [])):
             signals.append("business_context")
 
         # Contains code
@@ -245,7 +241,7 @@ class ContentAnalyzer:
         score += len(matching_domains) * 0.1
 
         # Boost for business/work content
-        if any(t in ["sent", "business", "senuamedia", "work"] for t in tags):
+        if any(t in ["sent", "business", "professional", "work"] for t in tags):
             score += 0.2
 
         return max(0.0, min(1.0, score))

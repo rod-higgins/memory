@@ -11,9 +11,7 @@ This script processes all ingested content and derives meaningful insights:
 
 import asyncio
 import json
-import re
 import sqlite3
-from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -256,7 +254,7 @@ class PLMSynthesizer:
 
         conn.close()
 
-        print(f"  Extracted profile:")
+        print("  Extracted profile:")
         print(f"    - {len(self.profile.expertise)} expertise areas")
         print(f"    - {len(self.profile.roles)} roles")
         print(f"    - {len(self.profile.organizations)} organizations")

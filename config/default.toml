@@ -75,7 +75,7 @@ email = false  # Protected - requires manual export
 notes = false  # Protected - requires manual export
 
 [ingestion.github]
-users = ["rod-higgins", "senuamedia"]
+users = []  # Add your GitHub usernames here
 include_private = true
 
 # Promotion rules configuration

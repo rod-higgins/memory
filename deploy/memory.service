@@ -1,0 +1,29 @@
+[Unit]
+Description=Personal Memory System
+After=network.target ollama.service
+Wants=ollama.service
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/memory
+Environment=PATH=/home/ubuntu/memory/.venv/bin:/usr/local/bin:/usr/bin:/bin
+Environment=OLLAMA_HOST=http://localhost:11434
+ExecStart=/home/ubuntu/memory/.venv/bin/uvicorn memory.web.app:app --host 0.0.0.0 --port 8765
+Restart=always
+RestartSec=5
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=memory
+
+# Security
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/ubuntu/memory/data
+
+[Install]
+WantedBy=multi-user.target
