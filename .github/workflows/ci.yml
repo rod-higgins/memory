@@ -47,7 +47,7 @@ jobs:
           pytest tests/ -v --tb=short --timeout=60 -m "not slow and not integration and not requires_torch and not requires_embeddings"
 
       - name: Upload test results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         if: failure()
         with:
           name: test-results-${{ matrix.os }}-py${{ matrix.python-version }}
@@ -155,7 +155,7 @@ jobs:
           python -m build
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: dist
           path: dist/
